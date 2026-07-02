@@ -1,0 +1,10 @@
+node_modules/
+.env
+credentials.json
+backend/token.json
+backend/inbox_cache.json
+backend/digest_cache.json
+backend/__pycache__/
+*.pyc
+.vercel/
+dist/
