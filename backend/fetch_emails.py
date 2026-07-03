@@ -11,66 +11,39 @@ from bs4 import BeautifulSoup
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
 def get_gmail_service():
-    """
-    Authenticates and builds the Gmail API service.
-    Token loading priority:
-      1. GMAIL_TOKEN_JSON env var (Heroku / production)
-      2. backend/token.json file  (local development)
-    """
-    import json as _json
-
+    """Helper to authenticate and build the Gmail API service."""
     creds = None
+    # Look for token.json in root or backend folder
     backend_dir = os.path.dirname(os.path.abspath(__file__))
     token_path = os.path.join(backend_dir, 'token.json')
     credentials_path = os.path.join(backend_dir, '..', 'credentials.json')
-
-    # ── Priority 1: env var (Heroku) ─────────────────────────────────────
-    token_json_str = os.environ.get("GMAIL_TOKEN_JSON", "")
-    if token_json_str:
-        try:
-            token_data = _json.loads(token_json_str)
-            creds = Credentials.from_authorized_user_info(token_data, SCOPES)
-        except Exception as e:
-            print(f"[Gmail Auth] Failed to load token from GMAIL_TOKEN_JSON env var: {e}")
-            creds = None
-
-    # ── Priority 2: local token.json file ────────────────────────────────
-    if not creds and os.path.exists(token_path):
+    
+    if os.path.exists(token_path):
         creds = Credentials.from_authorized_user_file(token_path, SCOPES)
-
-    # ── Refresh if expired ───────────────────────────────────────────────
+        
+    # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             try:
                 creds.refresh(Request())
-                # Write refreshed token back to file (local) if available
-                if os.path.exists(token_path):
-                    with open(token_path, 'w') as token:
-                        token.write(creds.to_json())
             except Exception as e:
-                print(f"[Gmail Auth] Error refreshing access token: {e}")
+                print(f"Error refreshing access token: {e}")
                 creds = None
-
-        # ── Local-only: interactive browser OAuth flow ───────────────────
-        # This path cannot run on Heroku (no browser). Run locally first,
-        # then upload the generated token.json as GMAIL_TOKEN_JSON config var.
+        
         if not creds:
             if not os.path.exists(credentials_path):
                 raise FileNotFoundError(
-                    "Google API credentials file not found. "
-                    "Set GMAIL_TOKEN_JSON env var on Heroku, or place credentials.json locally."
+                    f"Google API credentials file not found at {os.path.abspath(credentials_path)}. "
+                    "Please refer to the README.md to generate credentials.json."
                 )
-            if token_json_str:
-                # We are on a server — cannot open a browser
-                raise RuntimeError(
-                    "Gmail token is invalid or expired and cannot be refreshed. "
-                    "Re-run auth locally and update the GMAIL_TOKEN_JSON config var on Heroku."
-                )
-            print("Opening browser for Gmail OAuth...")
+            print("About to open browser for auth...")
             flow = InstalledAppFlow.from_client_secrets_file(credentials_path, SCOPES)
+            print("Flow created, starting local server...")
             creds = flow.run_local_server(host='127.0.0.1', port=8080)
-            with open(token_path, 'w') as token:
-                token.write(creds.to_json())
+            print("Auth completed!")
+        # Save the credentials for the next run
+        with open(token_path, 'w') as token:
+            token.write(creds.to_json())
 
     return build('gmail', 'v1', credentials=creds)
 
