@@ -11,3 +11,6 @@ python-dotenv
 google-genai
 datasets
 huggingface_hub
+flask-cors
+requests
+gunicorn

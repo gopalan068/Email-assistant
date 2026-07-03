@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: mail-assist-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn backend.api_server:app
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: meta-llama/llama-4-scout-17b-16e-instruct
+      - key: GMAIL_TOKEN_JSON
+        sync: false
+      - key: GMAIL_CREDENTIALS_JSON
+        sync: false
+      - key: RENDER
+        value: "true"

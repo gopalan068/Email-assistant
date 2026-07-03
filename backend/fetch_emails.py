@@ -1,5 +1,6 @@
 import os
 import base64
+import json
 from email.utils import parseaddr
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -13,39 +14,85 @@ SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 def get_gmail_service():
     """Helper to authenticate and build the Gmail API service."""
     creds = None
-    # Look for token.json in root or backend folder
     backend_dir = os.path.dirname(os.path.abspath(__file__))
     token_path = os.path.join(backend_dir, 'token.json')
     credentials_path = os.path.join(backend_dir, '..', 'credentials.json')
     
-    if os.path.exists(token_path):
+    # 1. Try loading from GMAIL_TOKEN_JSON environment variable (Render/Cloud support)
+    env_token = os.environ.get("GMAIL_TOKEN_JSON")
+    if env_token:
+        try:
+            creds_info = json.loads(env_token)
+            creds = Credentials.from_authorized_user_info(creds_info, SCOPES)
+            print("Loaded Gmail credentials from GMAIL_TOKEN_JSON environment variable.")
+        except Exception as e:
+            print(f"Error loading credentials from GMAIL_TOKEN_JSON: {e}")
+            creds = None
+
+    # 2. Fallback to local token.json file
+    if not creds and os.path.exists(token_path):
         creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+        print("Loaded Gmail credentials from token.json file.")
         
-    # If there are no (valid) credentials available, let the user log in.
+    # If there are no (valid) credentials available, refresh or authenticate
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             try:
                 creds.refresh(Request())
+                print("Successfully refreshed Gmail access token.")
+                # Save refreshed credentials locally if writable (ignore failures on cloud read-only filesystems)
+                try:
+                    with open(token_path, 'w') as token:
+                        token.write(creds.to_json())
+                except Exception:
+                    pass
             except Exception as e:
                 print(f"Error refreshing access token: {e}")
                 creds = None
         
         if not creds:
-            if not os.path.exists(credentials_path):
-                raise FileNotFoundError(
-                    f"Google API credentials file not found at {os.path.abspath(credentials_path)}. "
-                    "Please refer to the README.md to generate credentials.json."
-                )
-            print("About to open browser for auth...")
-            flow = InstalledAppFlow.from_client_secrets_file(credentials_path, SCOPES)
-            print("Flow created, starting local server...")
-            creds = flow.run_local_server(host='127.0.0.1', port=8080)
-            print("Auth completed!")
-        # Save the credentials for the next run
-        with open(token_path, 'w') as token:
-            token.write(creds.to_json())
-
-    return build('gmail', 'v1', credentials=creds)
+            # 3. Check GMAIL_CREDENTIALS_JSON env variable (OAuth client config)
+            env_creds = os.environ.get("GMAIL_CREDENTIALS_JSON")
+            if env_creds:
+                try:
+                    client_config = json.loads(env_creds)
+                    flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
+                    if os.environ.get("RENDER"):
+                        # We are on Render (headless cloud). run_local_server will fail.
+                        raise RuntimeError(
+                            "OAuth token is invalid or missing in headless production environment. "
+                            "Please authenticate locally and set the GMAIL_TOKEN_JSON environment variable on Render."
+                        )
+                    print("Starting local server for OAuth flow (using GMAIL_CREDENTIALS_JSON)...")
+                    creds = flow.run_local_server(host='127.0.0.1', port=8080)
+                except Exception as e:
+                    print(f"OAuth flow failed using GMAIL_CREDENTIALS_JSON: {e}")
+                    raise e
+            else:
+                # 4. Fallback to local credentials.json file
+                if not os.path.exists(credentials_path):
+                    raise FileNotFoundError(
+                        f"Google API credentials file not found at {os.path.abspath(credentials_path)}. "
+                        "Please refer to the README.md or set GMAIL_CREDENTIALS_JSON / GMAIL_TOKEN_JSON environment variables."
+                    )
+                if os.environ.get("RENDER"):
+                    raise RuntimeError(
+                        "OAuth token is invalid or missing in headless production environment. "
+                        "Please authenticate locally and set the GMAIL_TOKEN_JSON environment variable on Render."
+                    )
+                print("About to open browser for auth (using credentials.json)...")
+                flow = InstalledAppFlow.from_client_secrets_file(credentials_path, SCOPES)
+                print("Flow created, starting local server...")
+                creds = flow.run_local_server(host='127.0.0.1', port=8080)
+                print("Auth completed!")
+                
+            # Save the newly generated credentials locally
+            if creds:
+                try:
+                    with open(token_path, 'w') as token:
+                        token.write(creds.to_json())
+                except Exception as e:
+                    print(f"Could not save token.json file locally: {e}")
 
 def decode_body_data(data):
     """Safely decodes base64url data."""

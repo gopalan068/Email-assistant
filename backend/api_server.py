@@ -19,7 +19,11 @@ from backend.classify_importance import classify_importance_batch
 from backend.generate_digest import generate_newsletter_digest
 from backend.llm_client import call_llm
 
+from flask_cors import CORS
+
 app = Flask(__name__)
+CORS(app)
+
 
 # Initialize spam filter
 spam_filter = SpamFilter()

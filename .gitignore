@@ -9,3 +9,4 @@ backend/__pycache__/
 *.pyc
 .vercel/
 dist/
+dump_env_helper.py
