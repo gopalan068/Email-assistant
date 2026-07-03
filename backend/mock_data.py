@@ -19,8 +19,8 @@ DEFAULT_MOCK_INBOX = {
     "meta": "Inbox / Work",
     "isAiFlagged": False,
     "aiStatus": "DIRECT CORRESPONDENCE",
-    "body": "Hi Rahul,\n\nHope you are having a productive week.\n\nThe leadership team has moved the Q3 Business Review meeting up to Thursday morning. Because of this schedule shift, I need to compile all team slides by this evening.\n\nCould you please share your draft Q3 slides by EOD today? Let me know if you need any assistance compiling the customer satisfaction charts.\n\nThanks,\nMeera",
-    "aiReply": "Hi Meera,\n\nI am finalizing the Q3 slide deck and customer satisfaction charts now. I will have it uploaded and shared with you by 5:00 PM today. Let me know if you want to do a quick sync before the review.\n\nBest,\nRahul"
+    "body": "Hi Gopal,\n\nHope you are having a productive week.\n\nThe leadership team has moved the Q3 Business Review meeting up to Thursday morning. Because of this schedule shift, I need to compile all team slides by this evening.\n\nCould you please share your draft Q3 slides by EOD today? Let me know if you need any assistance compiling the customer satisfaction charts.\n\nThanks,\nMeera",
+    "aiReply": "Hi Meera,\n\nI am finalizing the Q3 slide deck and customer satisfaction charts now. I will have it uploaded and shared with you by 5:00 PM today. Let me know if you want to do a quick sync before the review.\n\nBest,\nGopal"
   },
   "3": {
     "from": "Freelance Client",
@@ -30,8 +30,8 @@ DEFAULT_MOCK_INBOX = {
     "meta": "Inbox / Payment",
     "isAiFlagged": False,
     "aiStatus": "PAYMENT INBOUND",
-    "body": "Hi Rahul,\n\nJust a quick update that I've processed the payment for Invoice #INV-204 ($1,200) for the landing page project today.\n\nIt has been sent via bank wire, so it should reflect in your account within the next 2-3 business days depending on interbank processing speeds.\n\nLet me know once you see it on your end. It was absolute pleasure working with you on this launch!\n\nBest regards,\nSarah K.",
-    "aiReply": "Hi Sarah,\n\nThank you for processing the payment for invoice #INV-204. I will monitor my account and confirm as soon as the funds clear. It was a pleasure working with you on the landing page project as well!\n\nBest regards,\nRahul"
+    "body": "Hi Gopal,\n\nJust a quick update that I've processed the payment for Invoice #INV-204 ($1,200) for the landing page project today.\n\nIt has been sent via bank wire, so it should reflect in your account within the next 2-3 business days depending on interbank processing speeds.\n\nLet me know once you see it on your end. It was absolute pleasure working with you on this launch!\n\nBest regards,\nSarah K.",
+    "aiReply": "Hi Sarah,\n\nThank you for processing the payment for invoice #INV-204. I will monitor my account and confirm as soon as the funds clear. It was a pleasure working with you on the landing page project as well!\n\nBest regards,\nGopal"
   },
   "4": {
     "from": "Dentist Clinic",
@@ -41,8 +41,8 @@ DEFAULT_MOCK_INBOX = {
     "meta": "Inbox / Health",
     "isAiFlagged": False,
     "aiStatus": "SCHEDULED EVENT",
-    "body": "Dear Rahul,\n\nThis is a friendly reminder of your upcoming dental appointment tomorrow, August 3, at 11:00 AM at Pearly Whites Dental Clinic.\n\nYour session is scheduled for a routine cleaning and general checkup with Dr. Roy. Please try to arrive about 10 minutes early to check-in at reception.\n\nIf you need to reschedule or cancel, please call us at least 12 hours in advance.\n\nSincerely,\nPearly Whites Dental Team",
-    "aiReply": "Hi Pearly Whites Team,\n\nThank you for the reminder. I confirm that I will be arriving tomorrow at 11:00 AM for my checkup with Dr. Roy.\n\nBest,\nRahul"
+    "body": "Dear Gopal,\n\nThis is a friendly reminder of your upcoming dental appointment tomorrow, August 3, at 11:00 AM at Pearly Whites Dental Clinic.\n\nYour session is scheduled for a routine cleaning and general checkup with Dr. Roy. Please try to arrive about 10 minutes early to check-in at reception.\n\nIf you need to reschedule or cancel, please call us at least 12 hours in advance.\n\nSincerely,\nPearly Whites Dental Team",
+    "aiReply": "Hi Pearly Whites Team,\n\nThank you for the reminder. I confirm that I will be arriving tomorrow at 11:00 AM for my checkup with Dr. Roy.\n\nBest,\nGopal"
   },
   "5": {
     "from": "winbig@lottery.xyz",
@@ -74,7 +74,7 @@ DEFAULT_MOCK_INBOX = {
     "meta": "Inbox / Promo",
     "isAiFlagged": False,
     "aiStatus": "PROMOTIONAL",
-    "body": "Hey Rahul,\n\nHow did you like your meal from Punjab Grill? We hope it was absolutely delicious!\n\nAs a thank you for ordering with us, here's an exclusive 20% discount coupon for your next meal (up to \u20b9100). Use code CRITIC20 at checkout.\n\nValid for the next 3 days on orders above \u20b9199.\n\nEnjoy your meal!",
+    "body": "Hey Gopal,\n\nHow did you like your meal from Punjab Grill? We hope it was absolutely delicious!\n\nAs a thank you for ordering with us, here's an exclusive 20% discount coupon for your next meal (up to \u20b9100). Use code CRITIC20 at checkout.\n\nValid for the next 3 days on orders above \u20b9199.\n\nEnjoy your meal!",
     "aiReply": "Action: Archive. Coupon Code logged: CRITIC20 (expires in 3 days)."
   },
   "8": {
@@ -85,7 +85,7 @@ DEFAULT_MOCK_INBOX = {
     "meta": "Inbox / Social",
     "isAiFlagged": False,
     "aiStatus": "SOCIAL ALERTS",
-    "body": "Hi Rahul,\n\nYou have 5 new pending connection requests waiting for your response on LinkedIn:\n\n- Ankit Verma (Software Engineer at TechCorp)\n- Priya Patel (UI/UX Designer)\n- ... and 3 other professionals in your network.\n\nGrow your network and see what they are posting today.\n\nSincerely,\nThe LinkedIn Team",
+    "body": "Hi Gopal,\n\nYou have 5 new pending connection requests waiting for your response on LinkedIn:\n\n- Ankit Verma (Software Engineer at TechCorp)\n- Priya Patel (UI/UX Designer)\n- ... and 3 other professionals in your network.\n\nGrow your network and see what they are posting today.\n\nSincerely,\nThe LinkedIn Team",
     "aiReply": "Action: Queue for manual review. Open LinkedIn to approve connection requests."
   },
   "9": {
@@ -93,10 +93,10 @@ DEFAULT_MOCK_INBOX = {
     "email": "shipment-tracking@amazon.in",
     "date": "Yesterday",
     "subject": "Your order has shipped",
-    "meta": "Inbox / Shipping",
+    "meta": "Inbox / Orders",
     "isAiFlagged": False,
-    "aiStatus": "TRANSACTIONAL",
-    "body": "Dear Rahul,\n\nYour order containing the \"AmazonBasics USB-C to USB-A Cable (3 ft)\" has been shipped and is currently in transit.\n\nYour package is expected to arrive on Friday, August 7 by 8:00 PM.\n\nTracking ID: AZ8821948B\nCarrier: Amazon Logistics\n\nYou can track your package details inside your account at any time.",
+    "aiStatus": "ORDER UPDATE",
+    "body": "Dear Gopal,\n\nYour order containing the \"AmazonBasics USB-C to USB-A Cable (3 ft)\" has been shipped and is currently in transit.\n\nYour package is expected to arrive on Friday, August 7 by 8:00 PM.\n\nTracking ID: AZ8821948B\nCarrier: Amazon Logistics\n\nYou can track your package details inside your account at any time.",
     "aiReply": "Action: Auto-tracked. Delivery expected Friday, August 7. Track ID: AZ8821948B."
   },
   "10": {
@@ -108,7 +108,51 @@ DEFAULT_MOCK_INBOX = {
     "isAiFlagged": False,
     "aiStatus": "NEWSLETTER",
     "body": "Hi Fitness Enthusiasts,\n\nWe are active to announce new morning Yoga and Mindfulness classes starting this Monday at Core Fitness gym!\n\nClass schedule:\n- Monday & Wednesday: 6:30 AM - 7:30 AM\n- Friday: 7:00 AM - 8:00 AM\n\nSign up by this weekend to claim a 15% early-bird discount on monthly packages. Spaces are limited!\n\nGet active,\nCore Fitness Gym",
-    "aiReply": "Hi Core Fitness Gym,\n\nThanks for the update. Could you please send me details about the monthly pricing for the yoga batch? Thanks,\nRahul"
+    "aiReply": "Hi Core Fitness Gym,\n\nThanks for the update. Could you please send me details about the monthly pricing for the yoga batch? Thanks,\nGopal"
+  },
+  "11": {
+    "from": "Google",
+    "email": "no-reply@accounts.google.com",
+    "date": "August 2, 2026 (8:44 AM)",
+    "subject": "New sign-in to your Google Account",
+    "meta": "Inbox / Security",
+    "isAiFlagged": True,
+    "aiStatus": "SECURITY ALERT",
+    "body": "Hi Gopal,\n\nYour Google Account was just signed in to from a new device.\n\nDevice: Chrome on Windows\nLocation: Mumbai, India\nTime: August 2, 2026 at 8:44 AM IST\n\nIf this was you, no action is needed. If you don't recognise this sign-in, secure your account immediately by visiting g.co/recover.",
+    "aiReply": "Action Logged: New sign-in verified. Location and device match expected usage pattern. No action required."
+  },
+  "12": {
+    "from": "Swiggy",
+    "email": "noreply@swiggy.in",
+    "date": "August 2, 2026 (9:12 AM)",
+    "subject": "Your OTP for Swiggy login is 739204",
+    "meta": "Inbox / OTP",
+    "isAiFlagged": True,
+    "aiStatus": "OTP",
+    "body": "Hi Gopal,\n\nYour one-time password (OTP) for Swiggy login is:\n\n739204\n\nThis code is valid for 5 minutes. Do not share it with anyone.\n\nIf you did not request this, please ignore this message.",
+    "aiReply": "Action Logged: OTP 739204 captured. Valid for 5 minutes. Expires at 9:17 AM."
+  },
+  "13": {
+    "from": "TechCorp HR",
+    "email": "hr@techcorp.in",
+    "date": "August 1, 2026",
+    "subject": "Interview Scheduled \u2014 Software Engineer (L3)",
+    "meta": "Inbox / Career",
+    "isAiFlagged": True,
+    "aiStatus": "JOB ALERT",
+    "body": "Dear Gopal,\n\nThank you for applying for the Software Engineer (L3) position at TechCorp.\n\nWe are pleased to invite you for a technical interview round:\n\nDate: August 8, 2026\nTime: 11:00 AM IST\nFormat: Video Call (Google Meet link will be shared separately)\nInterviewer: Arjun Mehta, Engineering Manager\n\nPlease confirm your availability by replying to this email.\n\nBest regards,\nTalent Acquisition Team, TechCorp",
+    "aiReply": "Dear TechCorp HR,\n\nThank you for the interview invitation. I confirm my availability for August 8 at 11:00 AM IST. Looking forward to the conversation with Arjun Mehta.\n\nBest regards,\nGopal"
+  },
+  "14": {
+    "from": "Flipkart",
+    "email": "noreply@flipkart.com",
+    "date": "August 2, 2026",
+    "subject": "Your order has been dispatched!",
+    "meta": "Inbox / Orders",
+    "isAiFlagged": False,
+    "aiStatus": "ORDER UPDATE",
+    "body": "Hi Gopal,\n\nGreat news! Your order #OD112345678 (boAt Rockerz 255 Wireless Earphones) has been dispatched.\n\nExpected Delivery: August 4, 2026\nTracking ID: FKMP9928341A\nShipped via: Ekart Logistics\n\nYou can track your order live on the Flipkart app or website.",
+    "aiReply": "Action: Order tracked. boAt Rockerz 255 dispatched. Expected August 4. Tracking ID: FKMP9928341A."
   }
 }
 

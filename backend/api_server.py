@@ -29,7 +29,14 @@ inbox_cache_path = os.path.join(backend_dir, "inbox_cache.json")
 digest_cache_path = os.path.join(backend_dir, "digest_cache.json")
 
 # Fallback Mock Data matching original mail assistant static mock
-with open(os.path.join(backend_dir, "mock_data.py"), "w", encoding="utf-8") as f:
+mock_data_path = os.path.join(backend_dir, "mock_data.py")
+class DummyFile:
+    def write(self, text): pass
+    def __enter__(self): return self
+    def __exit__(self, *args): pass
+
+f = open(mock_data_path, "w", encoding="utf-8") if not os.path.exists(mock_data_path) else DummyFile()
+with f:
     f.write('''# Default fallback mock data
 DEFAULT_MOCK_INBOX = {
   "1": {
@@ -51,8 +58,8 @@ DEFAULT_MOCK_INBOX = {
     "meta": "Inbox / Work",
     "isAiFlagged": False,
     "aiStatus": "DIRECT CORRESPONDENCE",
-    "body": "Hi Rahul,\\n\\nHope you are having a productive week.\\n\\nThe leadership team has moved the Q3 Business Review meeting up to Thursday morning. Because of this schedule shift, I need to compile all team slides by this evening.\\n\\nCould you please share your draft Q3 slides by EOD today? Let me know if you need any assistance compiling the customer satisfaction charts.\\n\\nThanks,\\nMeera",
-    "aiReply": "Hi Meera,\\n\\nI am finalizing the Q3 slide deck and customer satisfaction charts now. I will have it uploaded and shared with you by 5:00 PM today. Let me know if you want to do a quick sync before the review.\\n\\nBest,\\nRahul"
+    "body": "Hi Gopal,\\n\\nHope you are having a productive week.\\n\\nThe leadership team has moved the Q3 Business Review meeting up to Thursday morning. Because of this schedule shift, I need to compile all team slides by this evening.\\n\\nCould you please share your draft Q3 slides by EOD today? Let me know if you need any assistance compiling the customer satisfaction charts.\\n\\nThanks,\\nMeera",
+    "aiReply": "Hi Meera,\\n\\nI am finalizing the Q3 slide deck and customer satisfaction charts now. I will have it uploaded and shared with you by 5:00 PM today. Let me know if you want to do a quick sync before the review.\\n\\nBest,\\nGopal"
   },
   "3": {
     "from": "Freelance Client",
@@ -62,8 +69,8 @@ DEFAULT_MOCK_INBOX = {
     "meta": "Inbox / Payment",
     "isAiFlagged": False,
     "aiStatus": "PAYMENT INBOUND",
-    "body": "Hi Rahul,\\n\\nJust a quick update that I've processed the payment for Invoice #INV-204 ($1,200) for the landing page project today.\\n\\nIt has been sent via bank wire, so it should reflect in your account within the next 2-3 business days depending on interbank processing speeds.\\n\\nLet me know once you see it on your end. It was absolute pleasure working with you on this launch!\\n\\nBest regards,\\nSarah K.",
-    "aiReply": "Hi Sarah,\\n\\nThank you for processing the payment for invoice #INV-204. I will monitor my account and confirm as soon as the funds clear. It was a pleasure working with you on the landing page project as well!\\n\\nBest regards,\\nRahul"
+    "body": "Hi Gopal,\\n\\nJust a quick update that I've processed the payment for Invoice #INV-204 ($1,200) for the landing page project today.\\n\\nIt has been sent via bank wire, so it should reflect in your account within the next 2-3 business days depending on interbank processing speeds.\\n\\nLet me know once you see it on your end. It was absolute pleasure working with you on this launch!\\n\\nBest regards,\\nSarah K.",
+    "aiReply": "Hi Sarah,\\n\\nThank you for processing the payment for invoice #INV-204. I will monitor my account and confirm as soon as the funds clear. It was a pleasure working with you on the landing page project as well!\\n\\nBest regards,\\nGopal"
   },
   "4": {
     "from": "Dentist Clinic",
@@ -73,8 +80,8 @@ DEFAULT_MOCK_INBOX = {
     "meta": "Inbox / Health",
     "isAiFlagged": False,
     "aiStatus": "SCHEDULED EVENT",
-    "body": "Dear Rahul,\\n\\nThis is a friendly reminder of your upcoming dental appointment tomorrow, August 3, at 11:00 AM at Pearly Whites Dental Clinic.\\n\\nYour session is scheduled for a routine cleaning and general checkup with Dr. Roy. Please try to arrive about 10 minutes early to check-in at reception.\\n\\nIf you need to reschedule or cancel, please call us at least 12 hours in advance.\\n\\nSincerely,\\nPearly Whites Dental Team",
-    "aiReply": "Hi Pearly Whites Team,\\n\\nThank you for the reminder. I confirm that I will be arriving tomorrow at 11:00 AM for my checkup with Dr. Roy.\\n\\nBest,\\nRahul"
+    "body": "Dear Gopal,\\n\\nThis is a friendly reminder of your upcoming dental appointment tomorrow, August 3, at 11:00 AM at Pearly Whites Dental Clinic.\\n\\nYour session is scheduled for a routine cleaning and general checkup with Dr. Roy. Please try to arrive about 10 minutes early to check-in at reception.\\n\\nIf you need to reschedule or cancel, please call us at least 12 hours in advance.\\n\\nSincerely,\\nPearly Whites Dental Team",
+    "aiReply": "Hi Pearly Whites Team,\\n\\nThank you for the reminder. I confirm that I will be arriving tomorrow at 11:00 AM for my checkup with Dr. Roy.\\n\\nBest,\\nGopal"
   },
   "5": {
     "from": "winbig@lottery.xyz",
@@ -106,7 +113,7 @@ DEFAULT_MOCK_INBOX = {
     "meta": "Inbox / Promo",
     "isAiFlagged": False,
     "aiStatus": "PROMOTIONAL",
-    "body": "Hey Rahul,\\n\\nHow did you like your meal from Punjab Grill? We hope it was absolutely delicious!\\n\\nAs a thank you for ordering with us, here's an exclusive 20% discount coupon for your next meal (up to \\u20b9100). Use code CRITIC20 at checkout.\\n\\nValid for the next 3 days on orders above \\u20b9199.\\n\\nEnjoy your meal!",
+    "body": "Hey Gopal,\\n\\nHow did you like your meal from Punjab Grill? We hope it was absolutely delicious!\\n\\nAs a thank you for ordering with us, here's an exclusive 20% discount coupon for your next meal (up to \\u20b9100). Use code CRITIC20 at checkout.\\n\\nValid for the next 3 days on orders above \\u20b9199.\\n\\nEnjoy your meal!",
     "aiReply": "Action: Archive. Coupon Code logged: CRITIC20 (expires in 3 days)."
   },
   "8": {
@@ -117,7 +124,7 @@ DEFAULT_MOCK_INBOX = {
     "meta": "Inbox / Social",
     "isAiFlagged": False,
     "aiStatus": "SOCIAL ALERTS",
-    "body": "Hi Rahul,\\n\\nYou have 5 new pending connection requests waiting for your response on LinkedIn:\\n\\n- Ankit Verma (Software Engineer at TechCorp)\\n- Priya Patel (UI/UX Designer)\\n- ... and 3 other professionals in your network.\\n\\nGrow your network and see what they are posting today.\\n\\nSincerely,\\nThe LinkedIn Team",
+    "body": "Hi Gopal,\\n\\nYou have 5 new pending connection requests waiting for your response on LinkedIn:\\n\\n- Ankit Verma (Software Engineer at TechCorp)\\n- Priya Patel (UI/UX Designer)\\n- ... and 3 other professionals in your network.\\n\\nGrow your network and see what they are posting today.\\n\\nSincerely,\\nThe LinkedIn Team",
     "aiReply": "Action: Queue for manual review. Open LinkedIn to approve connection requests."
   },
   "9": {
@@ -128,7 +135,7 @@ DEFAULT_MOCK_INBOX = {
     "meta": "Inbox / Shipping",
     "isAiFlagged": False,
     "aiStatus": "TRANSACTIONAL",
-    "body": "Dear Rahul,\\n\\nYour order containing the \\"AmazonBasics USB-C to USB-A Cable (3 ft)\\" has been shipped and is currently in transit.\\n\\nYour package is expected to arrive on Friday, August 7 by 8:00 PM.\\n\\nTracking ID: AZ8821948B\\nCarrier: Amazon Logistics\\n\\nYou can track your package details inside your account at any time.",
+    "body": "Dear Gopal,\\n\\nYour order containing the \\"AmazonBasics USB-C to USB-A Cable (3 ft)\\" has been shipped and is currently in transit.\\n\\nYour package is expected to arrive on Friday, August 7 by 8:00 PM.\\n\\nTracking ID: AZ8821948B\\nCarrier: Amazon Logistics\\n\\nYou can track your package details inside your account at any time.",
     "aiReply": "Action: Auto-tracked. Delivery expected Friday, August 7. Track ID: AZ8821948B."
   },
   "10": {
@@ -140,7 +147,7 @@ DEFAULT_MOCK_INBOX = {
     "isAiFlagged": False,
     "aiStatus": "NEWSLETTER",
     "body": "Hi Fitness Enthusiasts,\\n\\nWe are active to announce new morning Yoga and Mindfulness classes starting this Monday at Core Fitness gym!\\n\\nClass schedule:\\n- Monday & Wednesday: 6:30 AM - 7:30 AM\\n- Friday: 7:00 AM - 8:00 AM\\n\\nSign up by this weekend to claim a 15% early-bird discount on monthly packages. Spaces are limited!\\n\\nGet active,\\nCore Fitness Gym",
-    "aiReply": "Hi Core Fitness Gym,\\n\\nThanks for the update. Could you please send me details about the monthly pricing for the yoga batch? Thanks,\\nRahul"
+    "aiReply": "Hi Core Fitness Gym,\\n\\nThanks for the update. Could you please send me details about the monthly pricing for the yoga batch? Thanks,\\nGopal"
   }
 }
 
@@ -241,16 +248,31 @@ def sync_emails():
             }), 400
 
         spam_emails = []
-        clean_emails = []
-        newsletters = []
-        
-        # 1. Run offline Spam Classifier
-        print("Filtering spam emails...")
+        newsletter_emails = []
+        candidate_emails = []  # Emails that will go through the spam + importance pipeline
+
+        # ── Step 0: Newsletter Pre-filter (runs BEFORE spam ML) ──────────────
+        # Newsletters must be separated first because the Enron-trained spam model
+        # will mis-classify promotional/newsletter emails as spam (they share vocabulary).
+        print("Pre-filtering newsletters...")
+        from backend.classify_importance import is_newsletter_heuristic
         for email in raw_emails:
+            if is_newsletter_heuristic(email):
+                email["isAiFlagged"] = False
+                email["aiStatus"] = "NEWSLETTER"
+                email["meta"] = "Inbox / Update"
+                newsletter_emails.append(email)
+            else:
+                candidate_emails.append(email)
+
+        # ── Step 1: Spam Filter (only runs on non-newsletter emails) ─────────
+        print(f"Filtering spam emails from {len(candidate_emails)} candidate emails...")
+        clean_emails = []
+        for email in candidate_emails:
             subj = email["subject"]
             sender = f"{email['from_name']} <{email['from_email']}>"
             body = email["body"]
-            
+
             if spam_filter.is_spam(subj, sender, body):
                 email["isAiFlagged"] = False
                 email["aiStatus"] = "SPAM"
@@ -258,25 +280,19 @@ def sync_emails():
                 spam_emails.append(email)
             else:
                 clean_emails.append(email)
-        
-        # 2. Run heuristic filter & batched LLM classification
-        print("Running importance classifier...")
+
+        # ── Step 2: Importance Classification (heuristics + ML + LLM) ───────
+        print(f"Running importance classifier on {len(clean_emails)} clean emails...")
         classified_emails = classify_importance_batch(clean_emails)
-        
-        # 3. Collect newsletters for digest pipeline
-        for email in classified_emails:
-            if email.get("aiStatus") == "NEWSLETTER":
-                newsletters.append(email)
-                
-        # 4. Generate newsletter digests
-        print("Compiling newsletter digests...")
-        digest_data = generate_newsletter_digest(newsletters)
-        
-        # 5. Format to contract schema
+
+        # ── Step 3: Generate Newsletter Digests ──────────────────────────────
+        print(f"Compiling newsletter digests from {len(newsletter_emails)} newsletters...")
+        digest_data = generate_newsletter_digest(newsletter_emails)
+
+        # ── Step 4: Format to contract schema ────────────────────────────────
         inbox_data = {}
-        all_emails = classified_emails + spam_emails
-        
-        # Build inbox database dictionary
+        all_emails = classified_emails + newsletter_emails + spam_emails
+
         for email in all_emails:
             msg_id = email["id"]
             inbox_data[msg_id] = {
@@ -290,16 +306,21 @@ def sync_emails():
                 "body": email["body"],
                 "aiReply": ""  # Handled on-demand via /api/draft-reply
             }
-            
+
         # Write to cache
         save_cache(inbox_data, digest_data)
-        
+
         return jsonify({
             "status": "success",
             "message": "Inbox synced successfully.",
-            "synced_count": len(all_emails)
+            "synced_count": len(all_emails),
+            "breakdown": {
+                "newsletters": len(newsletter_emails),
+                "spam": len(spam_emails),
+                "classified": len(classified_emails),
+            }
         })
-        
+
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -328,10 +349,10 @@ def draft_reply():
         
         # Call LLM to generate response draft
         system_instruction = (
-            "You are Rahul's helpful email writing assistant. "
-            "Write a brief, professional, and friendly email reply on behalf of Rahul. "
+            "You are Gopal's helpful email writing assistant. "
+            "Write a brief, professional, and friendly email reply on behalf of Gopal. "
             "Address the sender by name. Keep the reply short (3 to 4 sentences maximum) "
-            "and sign off as 'Rahul'. Do not add subject lines or placeholders."
+            "and sign off as 'Gopal'. Do not add subject lines or placeholders."
         )
         
         prompt = (

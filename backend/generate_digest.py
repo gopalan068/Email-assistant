@@ -1,3 +1,4 @@
+import re
 from .llm_client import call_llm
 
 def generate_newsletter_digest(newsletters):

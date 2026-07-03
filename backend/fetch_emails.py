@@ -97,7 +97,7 @@ def extract_parts_body(parts):
         return soup.get_text(separator='\n')
     return ""
 
-def fetch_recent_emails(limit=100):
+def fetch_recent_emails(limit=30):
     """Fetches list of recent emails from Gmail, returning clean intermediate data."""
     try:
         service = get_gmail_service()

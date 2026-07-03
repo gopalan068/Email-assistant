@@ -957,6 +957,146 @@
         background-position: -200% 0;
       }
     }
+
+    /* ── Extended Category Color Tokens ─────────────────────────────────── */
+    :root {
+      --color-security: #8B2D2D;
+      /* Muted crimson  — security / alerts */
+      --color-otp: #1E5C8A;
+      /* Steel blue      — OTP / verification */
+      --color-career: #5C3D7A;
+      /* Muted violet    — jobs / career */
+      --color-orders: #2A6E5E;
+      /* Forest teal     — shopping / orders */
+    }
+
+    /* Accent left-border strips for extended category rows */
+    .ledger-row.security-row {
+      border-left: 2px solid var(--color-security);
+      padding-left: 14px;
+    }
+
+    .ledger-row.security-row:hover,
+    .ledger-row.security-row.active {
+      padding-left: 20px;
+    }
+
+    .ledger-row.otp-row {
+      border-left: 2px solid var(--color-otp);
+      padding-left: 14px;
+    }
+
+    .ledger-row.otp-row:hover,
+    .ledger-row.otp-row.active {
+      padding-left: 20px;
+    }
+
+    .ledger-row.career-row {
+      border-left: 2px solid var(--color-career);
+      padding-left: 14px;
+    }
+
+    .ledger-row.career-row:hover,
+    .ledger-row.career-row.active {
+      padding-left: 20px;
+    }
+
+    .ledger-row.orders-row {
+      border-left: 2px solid var(--color-orders);
+      padding-left: 14px;
+    }
+
+    .ledger-row.orders-row:hover,
+    .ledger-row.orders-row.active {
+      padding-left: 20px;
+    }
+
+    /* Extended categories section wrapper */
+    .extended-categories-section {
+      margin-top: 56px;
+    }
+
+    .extended-categories-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: rgba(32, 38, 31, 0.4);
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .extended-categories-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background-color: var(--color-hairline);
+    }
+
+    /* 4-column extended grid */
+    .ledger-grid-extended {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 36px;
+    }
+
+    @media (max-width: 1300px) {
+      .ledger-grid-extended {
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .ledger-grid-extended {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Coloured column header underlines */
+    .column-header.security-header {
+      border-bottom-color: var(--color-security);
+    }
+
+    .column-header.otp-header {
+      border-bottom-color: var(--color-otp);
+    }
+
+    .column-header.career-header {
+      border-bottom-color: var(--color-career);
+    }
+
+    .column-header.orders-header {
+      border-bottom-color: var(--color-orders);
+    }
+
+    .column-count.security-count {
+      color: var(--color-security);
+    }
+
+    .column-count.otp-count {
+      color: var(--color-otp);
+    }
+
+    .column-count.career-count {
+      color: var(--color-career);
+    }
+
+    .column-count.orders-count {
+      color: var(--color-orders);
+    }
+
+    /* Empty-state hint shown when a category has no emails */
+    .empty-column-hint {
+      font-size: 12px;
+      color: rgba(32, 38, 31, 0.32);
+      font-style: italic;
+      padding: 14px 8px;
+      line-height: 1.5;
+    }
   </style>
 </head>
 
@@ -984,8 +1124,8 @@
         <span>AI TRIAGE ACTIVE</span>
       </div>
       <div class="account-info">
-        <span class="account-name">Rahul</span>
-        <div style="font-size: 11px; opacity: 0.6; font-family: 'IBM Plex Mono', monospace;">rahul@personal.email</div>
+        <span class="account-name">Gopal</span>
+        <div style="font-size: 11px; opacity: 0.6; font-family: 'IBM Plex Mono', monospace;">gopalan0555@gmail.com</div>
       </div>
     </div>
   </aside>
@@ -1046,7 +1186,7 @@
               <time class="row-time">Today</time>
             </div>
             <h3 class="row-subject">Urgent: Q3 review slides</h3>
-            <p class="row-snippet">Hi Rahul, can you share the deck by EOD? Leadership meeting moved to Thursday...</p>
+            <p class="row-snippet">Hi Gopal, can you share the deck by EOD? Leadership meeting moved to Thursday...</p>
             <div class="row-footer">
               <span class="row-tag">work</span>
             </div>
@@ -1195,6 +1335,58 @@
 
     </div>
 
+    <!-- ── Extended Categories Section ───────────────────────────────────── -->
+    <section class="extended-categories-section">
+      <div class="extended-categories-label">Extended Categories</div>
+      <div class="ledger-grid-extended">
+
+        <!-- Column: Security -->
+        <section class="ledger-column" id="col-security">
+          <h2 class="column-header security-header">
+            <span>04. Security</span>
+            <span class="column-count security-count" id="count-security">[00]</span>
+          </h2>
+          <div class="ledger-rows" id="rows-security">
+            <p class="empty-column-hint">No security alerts. All accounts appear safe.</p>
+          </div>
+        </section>
+
+        <!-- Column: OTP -->
+        <section class="ledger-column" id="col-otp">
+          <h2 class="column-header otp-header">
+            <span>05. OTP</span>
+            <span class="column-count otp-count" id="count-otp">[00]</span>
+          </h2>
+          <div class="ledger-rows" id="rows-otp">
+            <p class="empty-column-hint">No OTP or verification codes found.</p>
+          </div>
+        </section>
+
+        <!-- Column: Jobs / Career -->
+        <section class="ledger-column" id="col-career">
+          <h2 class="column-header career-header">
+            <span>06. Jobs / Career</span>
+            <span class="column-count career-count" id="count-career">[00]</span>
+          </h2>
+          <div class="ledger-rows" id="rows-career">
+            <p class="empty-column-hint">No job alerts or career updates.</p>
+          </div>
+        </section>
+
+        <!-- Column: Shopping / Orders -->
+        <section class="ledger-column" id="col-orders">
+          <h2 class="column-header orders-header">
+            <span>07. Shopping / Orders</span>
+            <span class="column-count orders-count" id="count-orders">[00]</span>
+          </h2>
+          <div class="ledger-rows" id="rows-orders">
+            <p class="empty-column-hint">No order updates or shipping emails.</p>
+          </div>
+        </section>
+
+      </div>
+    </section>
+
     <!-- Morning Digest Section (Editorial newspaper styling) -->
     <section class="digest-section">
       <div class="digest-header">
@@ -1320,7 +1512,7 @@
         meta: "Inbox / Work",
         isAiFlagged: false,
         aiStatus: "DIRECT CORRESPONDENCE",
-        body: `Hi Rahul,
+        body: `Hi Gopal,
 
         Hope you are having a productive week.
 
@@ -1330,7 +1522,7 @@
 
         Thanks,
         Meera`,
-        aiReply: "Hi Meera,\n\nI am finalizing the Q3 slide deck and customer satisfaction charts now. I will have it uploaded and shared with you by 5:00 PM today. Let me know if you want to do a quick sync before the review.\n\nBest,\nRahul"
+        aiReply: "Hi Meera,\n\nI am finalizing the Q3 slide deck and customer satisfaction charts now. I will have it uploaded and shared with you by 5:00 PM today. Let me know if you want to do a quick sync before the review.\n\nBest,\nGopal"
       },
       3: {
         from: "Freelance Client",
@@ -1340,7 +1532,7 @@
         meta: "Inbox / Payment",
         isAiFlagged: false,
         aiStatus: "PAYMENT INBOUND",
-        body: `Hi Rahul,
+        body: `Hi Gopal,
 
         Just a quick update that I've processed the payment for Invoice #INV-204 ($1,200) for the landing page project today.
 
@@ -1350,7 +1542,7 @@
 
         Best regards,
         Sarah K.`,
-        aiReply: "Hi Sarah,\n\nThank you for processing the payment for invoice #INV-204. I will monitor my account and confirm as soon as the funds clear. It was a pleasure working with you on the landing page project as well!\n\nBest regards,\nRahul"
+        aiReply: "Hi Sarah,\n\nThank you for processing the payment for invoice #INV-204. I will monitor my account and confirm as soon as the funds clear. It was a pleasure working with you on the landing page project as well!\n\nBest regards,\nGopal"
       },
       4: {
         from: "Dentist Clinic",
@@ -1360,7 +1552,7 @@
         meta: "Inbox / Health",
         isAiFlagged: false,
         aiStatus: "SCHEDULED EVENT",
-        body: `Dear Rahul,
+        body: `Dear Gopal,
 
         This is a friendly reminder of your upcoming dental appointment tomorrow, August 3, at 11:00 AM at Pearly Whites Dental Clinic.
 
@@ -1370,7 +1562,7 @@
 
         Sincerely,
         Pearly Whites Dental Team`,
-        aiReply: "Hi Pearly Whites Team,\n\nThank you for the reminder. I confirm that I will be arriving tomorrow at 11:00 AM for my checkup with Dr. Roy.\n\nBest,\nRahul"
+        aiReply: "Hi Pearly Whites Team,\n\nThank you for the reminder. I confirm that I will be arriving tomorrow at 11:00 AM for my checkup with Dr. Roy.\n\nBest,\nGopal"
       },
       5: {
         from: "winbig@lottery.xyz",
@@ -1421,7 +1613,7 @@
         meta: "Inbox / Promo",
         isAiFlagged: false,
         aiStatus: "PROMOTIONAL",
-        body: `Hey Rahul,
+        body: `Hey Gopal,
 
         How did you like your meal from Punjab Grill? We hope it was absolutely delicious!
 
@@ -1440,7 +1632,7 @@
         meta: "Inbox / Social",
         isAiFlagged: false,
         aiStatus: "SOCIAL ALERTS",
-        body: `Hi Rahul,
+        body: `Hi Gopal,
 
         You have 5 new pending connection requests waiting for your response on LinkedIn:
 
@@ -1462,7 +1654,7 @@
         meta: "Inbox / Shipping",
         isAiFlagged: false,
         aiStatus: "TRANSACTIONAL",
-        body: `Dear Rahul,
+        body: `Dear Gopal,
 
         Your order containing the "AmazonBasics USB-C to USB-A Cable (3 ft)" has been shipped and is currently in transit.
 
@@ -1494,7 +1686,7 @@
 
         Get active,
         Core Fitness Gym`,
-        aiReply: "Hi Core Fitness Gym,\n\nThanks for the update. Could you please send me details about the monthly pricing for the yoga batch? Thanks,\nRahul"
+        aiReply: "Hi Core Fitness Gym,\n\nThanks for the update. Could you please send me details about the monthly pricing for the yoga batch? Thanks,\nGopal"
       }
     };
 
@@ -1594,30 +1786,51 @@
     // Render Inbox Ledger
     function renderInbox(data) {
       emailDatabase = data;
-      
+
       const colImportant = document.querySelector('#col-important .ledger-rows');
       const colRegular = document.querySelector('#col-regular .ledger-rows');
       const colSpam = document.querySelector('#col-spam .ledger-rows');
+      const colSecurity = document.getElementById('rows-security');
+      const colOtp = document.getElementById('rows-otp');
+      const colCareer = document.getElementById('rows-career');
+      const colOrders = document.getElementById('rows-orders');
 
       colImportant.innerHTML = '';
       colRegular.innerHTML = '';
       colSpam.innerHTML = '';
+      colSecurity.innerHTML = '';
+      colOtp.innerHTML = '';
+      colCareer.innerHTML = '';
+      colOrders.innerHTML = '';
 
       let spamCount = 0;
 
       Object.keys(emailDatabase).forEach(id => {
         const email = emailDatabase[id];
-        
+
         let columnContainer;
         let rowClass = 'ledger-row';
-        
+
         const status = (email.aiStatus || "").toUpperCase();
-        
+
         if (status.includes('SPAM') || status.includes('BLOCKED')) {
           columnContainer = colSpam;
           rowClass += ' spam-row';
           spamCount++;
-        } else if (email.isAiFlagged || status === 'IMPORTANT') {
+        } else if (status === 'SECURITY ALERT' || status === 'SECURITY') {
+          columnContainer = colSecurity;
+          rowClass += ' security-row';
+        } else if (status === 'OTP') {
+          columnContainer = colOtp;
+          rowClass += ' otp-row';
+        } else if (status === 'JOB ALERT' || status === 'CAREER UPDATE' || status.includes('CAREER') || status.includes('JOB')) {
+          columnContainer = colCareer;
+          rowClass += ' career-row';
+        } else if (status === 'ORDER UPDATE' || status.includes('ORDER')) {
+          columnContainer = colOrders;
+          rowClass += ' orders-row';
+        } else if (email.isAiFlagged ||
+          ['IMPORTANT', 'DIRECT CORRESPONDENCE', 'PAYMENT INBOUND', 'SCHEDULED EVENT'].includes(status)) {
           columnContainer = colImportant;
           rowClass += ' important-row';
         } else {
@@ -1643,7 +1856,7 @@
 
         const initial = email.from ? email.from.charAt(0).toUpperCase() : '?';
         const tag = email.meta ? email.meta.split('/').pop().trim().toLowerCase() : 'inbox';
-        
+
         const article = document.createElement('article');
         article.className = rowClass;
         article.setAttribute('data-id', id);
@@ -1790,16 +2003,39 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: activeEmailId })
       })
-      .then(res => {
-        if (!res.ok) throw new Error("Backend response error");
-        return res.json();
-      })
-      .then(data => {
-        if (data.status === "success") {
-          const replyText = data.draft;
-          // Cache in local memory database
-          emailDatabase[activeEmailId].aiReply = replyText;
-          
+        .then(res => {
+          if (!res.ok) throw new Error("Backend response error");
+          return res.json();
+        })
+        .then(data => {
+          if (data.status === "success") {
+            const replyText = data.draft;
+            // Cache in local memory database
+            emailDatabase[activeEmailId].aiReply = replyText;
+
+            draftContent.innerText = '';
+            let index = 0;
+            if (typingTimer) clearInterval(typingTimer);
+
+            typingTimer = setInterval(() => {
+              if (index < replyText.length) {
+                draftContent.innerText += replyText.charAt(index);
+                index++;
+              } else {
+                clearInterval(typingTimer);
+                showToast("AI response drafted successfully.");
+              }
+            }, 10);
+          } else {
+            throw new Error(data.message || "Failed to draft reply");
+          }
+        })
+        .catch(err => {
+          console.error("Draft generation failed, falling back to simulated typing: ", err);
+          // Fallback to local default mockup draft text if API unavailable
+          const emailData = emailDatabase[activeEmailId];
+          const replyText = emailData && emailData.aiReply ? emailData.aiReply : "Hi, thank you for writing. I will look into this and get back to you soon.\n\nBest regards,\nGopal";
+
           draftContent.innerText = '';
           let index = 0;
           if (typingTimer) clearInterval(typingTimer);
@@ -1813,30 +2049,7 @@
               showToast("AI response drafted successfully.");
             }
           }, 10);
-        } else {
-          throw new Error(data.message || "Failed to draft reply");
-        }
-      })
-      .catch(err => {
-        console.error("Draft generation failed, falling back to simulated typing: ", err);
-        // Fallback to local default mockup draft text if API unavailable
-        const emailData = emailDatabase[activeEmailId];
-        const replyText = emailData && emailData.aiReply ? emailData.aiReply : "Hi, thank you for writing. I will look into this and get back to you soon.\n\nBest regards,\nRahul";
-        
-        draftContent.innerText = '';
-        let index = 0;
-        if (typingTimer) clearInterval(typingTimer);
-        
-        typingTimer = setInterval(() => {
-          if (index < replyText.length) {
-            draftContent.innerText += replyText.charAt(index);
-            index++;
-          } else {
-            clearInterval(typingTimer);
-            showToast("AI response drafted successfully.");
-          }
-        }, 10);
-      });
+        });
     });
 
     // Copy Draft to Clipboard
@@ -1858,25 +2071,25 @@
       ledgerGridContainer.classList.add('shimmer-active');
 
       fetch(`${API_BASE}/sync`, { method: "POST" })
-      .then(res => {
-        if (!res.ok) return res.json().then(d => { throw new Error(d.message || "Sync failed") });
-        return res.json();
-      })
-      .then(data => {
-        syncIcon.className = "fas fa-sync-alt";
-        ledgerGridContainer.classList.remove('shimmer-active');
-        syncTimeText.innerText = "Synced just now";
-        showToast("Inbox ledger successfully updated.");
-        // Reload dashboard
-        loadDashboardData();
-      })
-      .catch(err => {
-        console.error("Sync failed: ", err);
-        syncIcon.className = "fas fa-sync-alt";
-        ledgerGridContainer.classList.remove('shimmer-active');
-        syncTimeText.innerText = "Sync failed";
-        showToast(err.message || "Connection error. Make sure backend is running.");
-      });
+        .then(res => {
+          if (!res.ok) return res.json().then(d => { throw new Error(d.message || "Sync failed") });
+          return res.json();
+        })
+        .then(data => {
+          syncIcon.className = "fas fa-sync-alt";
+          ledgerGridContainer.classList.remove('shimmer-active');
+          syncTimeText.innerText = "Synced just now";
+          showToast("Inbox ledger successfully updated.");
+          // Reload dashboard
+          loadDashboardData();
+        })
+        .catch(err => {
+          console.error("Sync failed: ", err);
+          syncIcon.className = "fas fa-sync-alt";
+          ledgerGridContainer.classList.remove('shimmer-active');
+          syncTimeText.innerText = "Sync failed";
+          showToast(err.message || "Connection error. Make sure backend is running.");
+        });
     });
 
     // Regenerate Digest
@@ -1885,37 +2098,35 @@
       btnRegenerateDigest.disabled = true;
 
       fetch(`${API_BASE}/digest`)
-      .then(res => res.json())
-      .then(data => {
-        btnRegenerateDigest.innerText = "Regenerate Briefing";
-        btnRegenerateDigest.disabled = false;
-        renderDigest(data);
-        showToast("Morning briefing re-compiled.");
-      })
-      .catch(err => {
-        console.error("Digest generation failed: ", err);
-        btnRegenerateDigest.innerText = "Regenerate Briefing";
-        btnRegenerateDigest.disabled = false;
-        showToast("Error connecting to server.");
-      });
+        .then(res => res.json())
+        .then(data => {
+          btnRegenerateDigest.innerText = "Regenerate Briefing";
+          btnRegenerateDigest.disabled = false;
+          renderDigest(data);
+          showToast("Morning briefing re-compiled.");
+        })
+        .catch(err => {
+          console.error("Digest generation failed: ", err);
+          btnRegenerateDigest.innerText = "Regenerate Briefing";
+          btnRegenerateDigest.disabled = false;
+          showToast("Error connecting to server.");
+        });
     });
 
-    // Live Search Filter
+    // Live Search Filter — covers all 7 columns
     searchInput.addEventListener('input', (e) => {
       const query = e.target.value.toLowerCase().trim();
       const rows = document.querySelectorAll('.ledger-row');
 
       rows.forEach(row => {
-        const fromText = row.querySelector('.row-from').innerText.toLowerCase();
-        const subjectText = row.querySelector('.row-subject').innerText.toLowerCase();
-        const snippetText = row.querySelector('.row-snippet').innerText.toLowerCase();
+        const fromText = row.querySelector('.row-from') ? row.querySelector('.row-from').innerText.toLowerCase() : '';
+        const subjectText = row.querySelector('.row-subject') ? row.querySelector('.row-subject').innerText.toLowerCase() : '';
+        const snippetText = row.querySelector('.row-snippet') ? row.querySelector('.row-snippet').innerText.toLowerCase() : '';
         const tagText = row.querySelector('.row-tag') ? row.querySelector('.row-tag').innerText.toLowerCase() : '';
 
-        if (fromText.includes(query) || subjectText.includes(query) || snippetText.includes(query) || tagText.includes(query)) {
-          row.style.display = 'flex';
-        } else {
-          row.style.display = 'none';
-        }
+        const match = fromText.includes(query) || subjectText.includes(query) ||
+          snippetText.includes(query) || tagText.includes(query);
+        row.style.display = match ? 'flex' : 'none';
       });
 
       updateColumnCounts();
@@ -1923,27 +2134,40 @@
 
     // Update column count bubbles dynamically based on visible items
     function updateColumnCounts() {
-      const columns = ['important', 'regular', 'spam'];
+      // Main 3 columns use id=col-* selectors (they contain .ledger-row directly)
+      const mainCols = ['important', 'regular', 'spam'];
+      // Extended 4 columns use id=rows-* selectors
+      const extCols = ['security', 'otp', 'career', 'orders'];
       let totalVisible = 0;
 
-      columns.forEach(col => {
+      mainCols.forEach(col => {
         const container = document.getElementById(`col-${col}`);
-        const visibleRows = Array.from(container.querySelectorAll('.ledger-row')).filter(row => row.style.display !== 'none');
+        const visibleRows = Array.from(container.querySelectorAll('.ledger-row'))
+          .filter(row => row.style.display !== 'none');
         const count = visibleRows.length;
         totalVisible += count;
+        document.getElementById(`count-${col}`).innerText = count < 10 ? `[0${count}]` : `[${count}]`;
+      });
 
-        const paddedCount = count < 10 ? `[0${count}]` : `[${count}]`;
-        document.getElementById(`count-${col}`).innerText = paddedCount;
+      extCols.forEach(col => {
+        const container = document.getElementById(`rows-${col}`);
+        const visibleRows = Array.from(container.querySelectorAll('.ledger-row'))
+          .filter(row => row.style.display !== 'none');
+        const count = visibleRows.length;
+        totalVisible += count;
+        document.getElementById(`count-${col}`).innerText = count < 10 ? `[0${count}]` : `[${count}]`;
       });
 
       const importantContainer = document.getElementById('col-important');
-      const importantCount = Array.from(importantContainer.querySelectorAll('.ledger-row')).filter(row => row.style.display !== 'none').length;
+      const importantCount = Array.from(importantContainer.querySelectorAll('.ledger-row'))
+        .filter(row => row.style.display !== 'none').length;
 
+      const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
       if (importantCount === 0) {
-        statusHeaderText.innerHTML = `Thursday. Ledger is <span class="highlight">tidy</span>.`;
+        statusHeaderText.innerHTML = `${today}. Ledger is <span class="highlight">tidy</span>.`;
       } else {
         const lettersWord = importantCount === 1 ? 'letter' : 'letters';
-        statusHeaderText.innerHTML = `Thursday. <span class="highlight">${importantCount} ${lettersWord}</span> need you.`;
+        statusHeaderText.innerHTML = `${today}. <span class="highlight">${importantCount} ${lettersWord}</span> need you.`;
       }
 
       document.getElementById('sidebar-inbox-count').innerText = `[${totalVisible}]`;
@@ -1969,30 +2193,30 @@
     // Load data from Backend or fallback
     function loadDashboardData() {
       fetch(`${API_BASE}/inbox`)
-      .then(res => {
-        if (!res.ok) throw new Error("HTTP error");
-        return res.json();
-      })
-      .then(inboxData => {
-        renderInbox(inboxData);
-      })
-      .catch(err => {
-        console.warn("Backend server not available, loading fallback mockup: ", err);
-        renderInbox(mockEmailDatabase);
-      });
+        .then(res => {
+          if (!res.ok) throw new Error("HTTP error");
+          return res.json();
+        })
+        .then(inboxData => {
+          renderInbox(inboxData);
+        })
+        .catch(err => {
+          console.warn("Backend server not available, loading fallback mockup: ", err);
+          renderInbox(mockEmailDatabase);
+        });
 
       fetch(`${API_BASE}/digest`)
-      .then(res => {
-        if (!res.ok) throw new Error("HTTP error");
-        return res.json();
-      })
-      .then(digestData => {
-        renderDigest(digestData);
-      })
-      .catch(err => {
-        console.warn("Backend server not available, loading mockup digest.");
-        renderDigest(mockDigest);
-      });
+        .then(res => {
+          if (!res.ok) throw new Error("HTTP error");
+          return res.json();
+        })
+        .then(digestData => {
+          renderDigest(digestData);
+        })
+        .catch(err => {
+          console.warn("Backend server not available, loading mockup digest.");
+          renderDigest(mockDigest);
+        });
     }
 
     // Initialize Dashboard
