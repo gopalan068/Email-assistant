@@ -2,6 +2,7 @@ services:
   - type: web
     name: mail-assist-backend
     runtime: python
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn backend.api_server:app
     envVars:
