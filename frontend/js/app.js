@@ -705,8 +705,25 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Close drawer when clicking outside
+// Toggle sidebar on mobile
+const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+const sidebar = document.querySelector('.sidebar');
+
+if (btnToggleSidebar) {
+  btnToggleSidebar.addEventListener('click', (e) => {
+    e.stopPropagation();
+    sidebar.classList.toggle('open');
+  });
+}
+
+// Close drawer or sidebar when clicking outside
 document.addEventListener('click', (e) => {
+  if (sidebar && sidebar.classList.contains('open') &&
+      !sidebar.contains(e.target) &&
+      (btnToggleSidebar && !btnToggleSidebar.contains(e.target))) {
+    sidebar.classList.remove('open');
+  }
+
   if (drawer.classList.contains('open') &&
     !drawer.contains(e.target) &&
     !e.target.closest('.ledger-row')) {
