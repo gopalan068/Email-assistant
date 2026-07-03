@@ -219,8 +219,12 @@ def save_cache(inbox_data, digest_data):
 
 @app.after_request
 def add_cors_headers(response):
-    """Enables cross-origin fetches from local file:/// front-ends."""
-    response.headers.add('Access-Control-Allow-Origin', '*')
+    """Restricts cross-origin requests to the configured frontend origin."""
+    allowed_origin = os.environ.get(
+        "FRONTEND_URL",
+        "https://email-assistance068.vercel.app"  # fallback to known Vercel URL
+    )
+    response.headers.set('Access-Control-Allow-Origin', allowed_origin)
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response
@@ -383,4 +387,4 @@ def draft_reply():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     print(f"Starting Mail Assist backend server on http://localhost:{port}...")
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=False)
