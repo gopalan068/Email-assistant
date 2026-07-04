@@ -4,10 +4,8 @@ services:
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn backend.api_server:app
+    startCommand: gunicorn -b 0.0.0.0:$PORT backend.api_server:app
     envVars:
-      - key: PORT
-        value: 5000
       - key: GROQ_API_KEY
         sync: false
       - key: GROQ_MODEL
