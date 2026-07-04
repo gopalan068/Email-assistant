@@ -110,20 +110,40 @@ def decode_body_data(data):
         print(f"Error decoding body data: {e}")
         return ""
 
+def clean_excessive_newlines(text):
+    """Trims excessive consecutive blank lines, leaving at most one blank line between paragraphs."""
+    if not text:
+        return ""
+    text = text.replace('\r\n', '\n').replace('\r', '\n')
+    lines = [line.rstrip() for line in text.split('\n')]
+    cleaned_lines = []
+    prev_blank = False
+    for line in lines:
+        if not line:
+            if not prev_blank:
+                cleaned_lines.append("")
+                prev_blank = True
+        else:
+            cleaned_lines.append(line)
+            prev_blank = False
+    return "\n".join(cleaned_lines).strip()
+
 def extract_body(payload):
     """Extracts raw body text from message payload, preferring text/plain, then converting text/html."""
+    raw_body = ""
     if 'parts' in payload:
-        return extract_parts_body(payload['parts'])
-    
-    body_data = payload.get('body', {}).get('data', '')
-    if body_data:
-        mime_type = payload.get('mimeType', 'text/plain')
-        decoded = decode_body_data(body_data)
-        if mime_type == 'text/html':
-            soup = BeautifulSoup(decoded, 'html.parser')
-            return soup.get_text(separator='\n')
-        return decoded
-    return ""
+        raw_body = extract_parts_body(payload['parts'])
+    else:
+        body_data = payload.get('body', {}).get('data', '')
+        if body_data:
+            mime_type = payload.get('mimeType', 'text/plain')
+            decoded = decode_body_data(body_data)
+            if mime_type == 'text/html':
+                soup = BeautifulSoup(decoded, 'html.parser')
+                raw_body = soup.get_text(separator='\n')
+            else:
+                raw_body = decoded
+    return clean_excessive_newlines(raw_body)
 
 def extract_parts_body(parts):
     """Recursively processes multipart message parts."""
