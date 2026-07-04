@@ -94,6 +94,39 @@ def get_user_cache_paths(email):
     digest_path = os.path.join(backend_dir, f"digest_cache_{suffix}.json")
     return inbox_path, digest_path
 
+def get_user_settings_path(email):
+    suffix = sanitize_filename_suffix(email)
+    return os.path.join(backend_dir, f"user_config_{suffix}.json")
+
+DEFAULT_NEWSLETTERS = [
+    "tldrnewsletter.com",
+    "morningbrew.com",
+    "email.join1440.com",
+    "axios.com",
+    "theatlantic.com"
+]
+
+def load_user_settings(email):
+    path = get_user_settings_path(email)
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                settings = json.load(f)
+                if "subscribed_newsletters" not in settings:
+                    settings["subscribed_newsletters"] = DEFAULT_NEWSLETTERS.copy()
+                return settings
+        except Exception as e:
+            print(f"Error loading user settings: {e}")
+    return {"subscribed_newsletters": DEFAULT_NEWSLETTERS.copy()}
+
+def save_user_settings(email, settings):
+    path = get_user_settings_path(email)
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(settings, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"Error saving user settings: {e}")
+
 last_sync_times = {}
 
 def check_sync_rate_limit(email):
@@ -357,6 +390,39 @@ def get_digest():
     _, digest = load_cached_data(email)
     return jsonify(digest)
 
+@app.route('/api/settings', methods=['GET'])
+def get_settings():
+    token = get_token_from_request()
+    email = verify_token_and_get_email(token)
+    if not email:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+    settings = load_user_settings(email)
+    return jsonify(settings)
+
+@app.route('/api/settings', methods=['POST'])
+def save_settings_endpoint():
+    token = get_token_from_request()
+    email = verify_token_and_get_email(token)
+    if not email:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+    
+    try:
+        data = request.get_json() or {}
+        subscribed = data.get("subscribed_newsletters", [])
+        if not isinstance(subscribed, list):
+            return jsonify({"status": "error", "message": "Invalid settings format"}), 400
+        
+        # Clean list items
+        cleaned = [item.strip() for item in subscribed if isinstance(item, str) and item.strip()]
+        
+        settings = load_user_settings(email)
+        settings["subscribed_newsletters"] = cleaned
+        save_user_settings(email, settings)
+        
+        return jsonify({"status": "success", "message": "Settings updated successfully."})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @app.route('/api/sync', methods=['POST'])
 def sync_emails():
     token = get_token_from_request()
@@ -385,17 +451,55 @@ def sync_emails():
         newsletter_emails = []
         candidate_emails = []  # Emails that will go through the spam + importance pipeline
 
+        # Load user settings/subscribed newsletters
+        settings = load_user_settings(email)
+        user_subscribed = settings.get("subscribed_newsletters", [])
+        # Always merge DEFAULT_NEWSLETTERS to make sure they are always whitelisted
+        subscribed = list(set(user_subscribed + DEFAULT_NEWSLETTERS))
+
         # ── Step 0: Newsletter Pre-filter (runs BEFORE spam ML) ──────────────
-        print("Pre-filtering newsletters...")
+        print(f"Pre-filtering newsletters (subscribed list: {subscribed})...")
         from backend.classify_importance import is_newsletter_heuristic
+        
+        def is_newsletter_check(email_data, subscribed_list):
+            if not subscribed_list:
+                return False
+            
+            sender_email = email_data.get("from_email", "").strip().lower()
+            sender_name = email_data.get("from_name", "").strip().lower()
+            domain = sender_email.split("@")[-1].strip(" >") if "@" in sender_email else ""
+            
+            for item in subscribed_list:
+                item = item.lower().strip()
+                # Check match
+                if (item == sender_email or 
+                    item == domain or 
+                    domain.endswith("." + item) or 
+                    sender_email.endswith("@" + item) or 
+                    (len(item) > 2 and item in sender_name)):
+                    print(f"[Newsletter Match] '{sender_email}' matched whitelisted item '{item}'")
+                    return True
+            return False
+
         for email_data in raw_emails:
-            if is_newsletter_heuristic(email_data):
+            if is_newsletter_check(email_data, subscribed):
                 email_data["isAiFlagged"] = False
                 email_data["aiStatus"] = "NEWSLETTER"
                 email_data["meta"] = "Inbox / Update"
                 newsletter_emails.append(email_data)
             else:
                 candidate_emails.append(email_data)
+
+        # Enforce hard limit of at most 3 newsletters (newest first)
+        older_newsletter_emails = []
+        if len(newsletter_emails) > 3:
+            older_newsletter_emails = newsletter_emails[3:18]  # additional 15 emails at max
+            for email_data in older_newsletter_emails:
+                email_data["isAiFlagged"] = False
+                email_data["aiStatus"] = "OLDER_NEWSLETTER"
+                email_data["meta"] = "Inbox / Older Updates"
+            print(f"Limiting newsletters: kept 3 active newsletters, routed {len(older_newsletter_emails)} to older section.")
+            newsletter_emails = newsletter_emails[:3]
 
         # ── Step 1: Spam Filter (only runs on non-newsletter emails) ─────────
         print(f"Filtering spam emails from {len(candidate_emails)} candidate emails...")
@@ -423,10 +527,17 @@ def sync_emails():
 
         # ── Step 4: Format to contract schema ────────────────────────────────
         inbox_data = {}
-        all_emails = classified_emails + newsletter_emails + spam_emails
+        all_emails = classified_emails + newsletter_emails + spam_emails + older_newsletter_emails
+
+        # Load previous cache if exists to preserve manual briefing fields
+        prev_inbox, _ = load_cached_data(email)
 
         for email_data in all_emails:
             msg_id = email_data["id"]
+            # Look up if this email has a briefing in previous cache
+            prev_item = prev_inbox.get(str(msg_id))
+            prev_briefing = prev_item.get("newsletterBriefing", "") if prev_item else ""
+            
             inbox_data[msg_id] = {
                 "from": email_data["from_name"],
                 "email": email_data["from_email"],
@@ -436,7 +547,8 @@ def sync_emails():
                 "isAiFlagged": email_data["isAiFlagged"],
                 "aiStatus": email_data["aiStatus"],
                 "body": email_data["body"],
-                "aiReply": ""  # Handled on-demand via /api/draft-reply
+                "aiReply": "",  # Handled on-demand via /api/draft-reply
+                "newsletterBriefing": prev_briefing  # Preserve existing briefing if present
             }
 
         # Write to user-specific cache
@@ -517,7 +629,54 @@ def draft_reply():
             "status": "error",
             "message": f"Failed to draft reply: {str(e)}"
         }), 500
-
+@app.route('/api/brief-newsletter', methods=['POST'])
+def brief_newsletter():
+    token = get_token_from_request()
+    email = verify_token_and_get_email(token)
+    if not email:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+        
+    try:
+        req_data = request.get_json() or {}
+        email_id = req_data.get("id")
+        if not email_id:
+            return jsonify({"status": "error", "message": "Missing email 'id' parameter."}), 400
+            
+        inbox, digest = load_cached_data(email)
+        email_item = inbox.get(str(email_id))
+        
+        if not email_item:
+            return jsonify({"status": "error", "message": "Email not found."}), 404
+            
+        print(f"[LLM Newsletter Briefing] Creating briefing for: {email_item['subject']}")
+        
+        system_instruction = (
+            "You are a smart email summary assistant. "
+            "Write a very concise summary (maximum 2 to 3 sentences) of this newsletter email. "
+            "Focus on the main highlights, key updates, or actionable insights. "
+            "Keep the tone professional and clean. Do not add headers, list bullets, or markdown formatting."
+        )
+        
+        prompt = (
+            f"Please summarize this newsletter:\n\n"
+            f"From: {email_item['from']} <{email_item['email']}>\n"
+            f"Subject: {email_item['subject']}\n"
+            f"Body:\n{email_item['body']}"
+        )
+        
+        brief_text = call_llm(prompt, system_instruction=system_instruction, json_mode=False)
+        
+        # Save briefing back into cache
+        inbox[str(email_id)]["newsletterBriefing"] = brief_text
+        save_cache(email, inbox, digest)
+        
+        return jsonify({
+            "status": "success",
+            "briefing": brief_text
+        })
+    except Exception as e:
+        print(f"Error briefing newsletter: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     print(f"Starting Mail Assist backend server on http://localhost:{port}...")

@@ -325,7 +325,6 @@
           </div>
         </section>
 
-      </div>
     </section>
 
     <!-- Morning Digest Section (Editorial newspaper styling) -->
@@ -373,6 +372,22 @@
       </div>
     </section>
 
+    <!-- ── Older Newsletters Section (Gmail-style Single Column Layout) ── -->
+    <section class="older-newsletters-section">
+      <div class="section-label">Older Newsletters</div>
+      <div class="gmail-ledger-container">
+        <div class="gmail-rows-header">
+          <div class="header-col-from">Sender</div>
+          <div class="header-col-subject">Subject</div>
+          <div class="header-col-date">Date</div>
+          <div class="header-col-action" style="text-align: right; padding-right: 16px;">AI Action</div>
+        </div>
+        <div class="gmail-rows" id="rows-older-newsletters">
+          <p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No older newsletters found.</p>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- Right Side detail-drawer -->
@@ -416,6 +431,33 @@
       </div>
     </div>
   </aside>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Mail Assist Settings</h2>
+        <button class="btn-close-modal" id="btn-close-settings">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h3>Subscribed Newsletters Whitelist</h3>
+        <p class="modal-help-text">Only emails from these senders or domains will be classified as newsletters and compiled in your digests. Leave empty to fallback to automatic smart heuristics.</p>
+        
+        <div class="newsletter-list" id="settings-newsletter-list">
+          <!-- Dynamically populated tags -->
+        </div>
+        
+        <div class="modal-input-row">
+          <input type="text" id="input-new-newsletter" placeholder="e.g. tldr.tech, news@domain.com" autocomplete="off">
+          <button class="btn-action" id="btn-add-newsletter">Add</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-action btn-secondary" id="btn-cancel-settings">Cancel</button>
+        <button class="btn-action" id="btn-save-settings">Save Settings</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Toast Notification Holder -->
   <div class="toast-container" id="toast-container"></div>

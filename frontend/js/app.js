@@ -204,6 +204,28 @@ const mockEmailDatabase = {
     Get active,
     Core Fitness Gym`,
     aiReply: "Hi Core Fitness Gym,\n\nThanks for the update. Could you please send me details about the monthly pricing for the yoga batch? Thanks,\nGopal"
+  },
+  11: {
+    from: "TLDR Newsletter",
+    email: "tldr@tldrnewsletter.com",
+    date: "July 31, 2026",
+    subject: "The Future of WebGPU and Browser-based AI",
+    meta: "Inbox / Older Updates",
+    isAiFlagged: false,
+    aiStatus: "OLDER_NEWSLETTER",
+    body: "Browser-based AI models are getting 10x faster thanks to WebGPU bindings in modern browsers. Chrome and Safari have rolled out full acceleration support. WebGPU allows WebGL developers to harness compute shaders for heavy model weights...",
+    aiReply: ""
+  },
+  12: {
+    from: "Morning Brew",
+    email: "brew@morningbrew.com",
+    date: "July 30, 2026",
+    subject: "A Big Shift in Global Supply Chains",
+    meta: "Inbox / Older Updates",
+    isAiFlagged: false,
+    aiStatus: "OLDER_NEWSLETTER",
+    body: "Manufacturing operations are shifting rapidly away from highly centralized pipelines to regional local assembly plants. This reduces carbon prints, improves shipping delays, and protects against geopolitical tariffs...",
+    aiReply: ""
   }
 };
 
@@ -345,6 +367,7 @@ function renderInbox(data) {
   const colOtp = document.getElementById('rows-otp');
   const colCareer = document.getElementById('rows-career');
   const colOrders = document.getElementById('rows-orders');
+  const colOlderNewsletters = document.getElementById('rows-older-newsletters');
 
   colImportant.innerHTML = '';
   colRegular.innerHTML = '';
@@ -353,8 +376,10 @@ function renderInbox(data) {
   colOtp.innerHTML = '';
   colCareer.innerHTML = '';
   colOrders.innerHTML = '';
+  if (colOlderNewsletters) colOlderNewsletters.innerHTML = '';
 
   let spamCount = 0;
+  let olderCount = 0;
 
   Object.keys(emailDatabase).forEach(id => {
     const email = emailDatabase[id];
@@ -363,6 +388,14 @@ function renderInbox(data) {
     let rowClass = 'ledger-row';
 
     const status = (email.aiStatus || "").toUpperCase();
+
+    if (status === 'OLDER_NEWSLETTER') {
+      if (colOlderNewsletters) {
+        renderOlderNewsletterRow(id, email, colOlderNewsletters);
+        olderCount++;
+      }
+      return;
+    }
 
     if (status.includes('SPAM') || status.includes('BLOCKED')) {
       columnContainer = colSpam;
@@ -439,6 +472,10 @@ function renderInbox(data) {
       <span>${spamCount} log${spamCount > 1 ? 's' : ''} filtered safely. Inbox remains clean.</span>
     `;
     colSpam.appendChild(summary);
+  }
+
+  if (olderCount === 0 && colOlderNewsletters) {
+    colOlderNewsletters.innerHTML = '<p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No older newsletters found.</p>';
   }
 
   updateColumnCounts();
@@ -841,6 +878,7 @@ function checkAuthStatus() {
     if (btnSyncEmails) btnSyncEmails.style.display = "block";
     fetchUserProfile(token);
     loadDashboardData();
+    loadSettings();
   } else {
     if (profileLoggedOut) profileLoggedOut.style.display = "block";
     if (profileLoggedIn) profileLoggedIn.style.display = "none";
@@ -903,7 +941,190 @@ function signOutUser() {
   showToast("Logged out successfully.");
 }
 
-// Wire OAuth UI listeners
+let subscribedNewsletters = [];
+
+function loadSettings() {
+  const token = sessionStorage.getItem("gmail_access_token");
+  if (!token) return;
+  
+  fetch(`${API_BASE}/settings`, { headers: getAuthHeaders() })
+    .then(res => {
+      if (res.status === 401) {
+        handleSessionExpired();
+        throw new Error("Session expired");
+      }
+      if (!res.ok) throw new Error("Failed to load settings");
+      return res.json();
+    })
+    .then(data => {
+      subscribedNewsletters = data.subscribed_newsletters || [];
+      renderSettingsTags();
+    })
+    .catch(err => {
+      console.warn("Could not load user settings: ", err);
+    });
+}
+
+function renderSettingsTags() {
+  const listEl = document.getElementById("settings-newsletter-list");
+  if (!listEl) return;
+  
+  listEl.innerHTML = "";
+  if (subscribedNewsletters.length === 0) {
+    listEl.innerHTML = '<span style="font-style: italic; opacity: 0.5; font-size: 12px; margin: auto;">No custom newsletter whitelist configured. Falling back to heuristics.</span>';
+    return;
+  }
+  
+  subscribedNewsletters.forEach((item, index) => {
+    const tag = document.createElement("div");
+    tag.className = "newsletter-tag";
+    tag.innerHTML = `<span>${item}</span><span class="remove-tag" data-index="${index}">&times;</span>`;
+    listEl.appendChild(tag);
+  });
+  
+  // Wire up remove handlers
+  listEl.querySelectorAll(".remove-tag").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const idx = parseInt(e.target.getAttribute("data-index"), 10);
+      subscribedNewsletters.splice(idx, 1);
+      renderSettingsTags();
+    });
+  });
+}
+
+function renderOlderNewsletterRow(id, email, container) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'gmail-row-wrapper';
+  
+  const snippet = email.body ? email.body.substring(0, 80).trim() + '...' : '';
+  const dateFormatted = formatDate(email.date);
+  
+  const briefText = email.newsletterBriefing || '';
+  const displayBriefing = briefText ? 'block' : 'none';
+  
+  wrapper.innerHTML = `
+    <div class="gmail-row" data-id="${id}">
+      <div class="gmail-col-from">${email.from}</div>
+      <div class="gmail-col-subject-wrapper">
+        <span class="gmail-subject">${email.subject}</span>
+        <span class="gmail-sep"> — </span>
+        <span class="gmail-snippet">${snippet}</span>
+      </div>
+      <div class="gmail-col-date">${dateFormatted}</div>
+      <div class="gmail-col-action">
+        <button class="btn-row-briefing" data-id="${id}">
+          <i class="fas fa-magic"></i> Generate Briefing
+        </button>
+      </div>
+    </div>
+    <div class="row-briefing-box" id="briefing-box-${id}" style="display: ${displayBriefing};">
+      <div class="briefing-header">AI Briefing Summary</div>
+      <div class="briefing-text" id="briefing-text-${id}">${briefText}</div>
+    </div>
+  `;
+  
+  wrapper.querySelector('.gmail-col-from').addEventListener('click', (e) => {
+    openEmailDetails(id);
+  });
+  wrapper.querySelector('.gmail-col-subject-wrapper').addEventListener('click', (e) => {
+    openEmailDetails(id);
+  });
+  wrapper.querySelector('.gmail-col-date').addEventListener('click', (e) => {
+    openEmailDetails(id);
+  });
+  
+  const btnBrief = wrapper.querySelector('.btn-row-briefing');
+  if (btnBrief) {
+    btnBrief.addEventListener('click', (e) => {
+      e.stopPropagation();
+      generateOlderNewsletterBriefing(id);
+    });
+  }
+  
+  container.appendChild(wrapper);
+}
+
+function generateOlderNewsletterBriefing(id) {
+  const token = sessionStorage.getItem("gmail_access_token");
+  
+  const box = document.getElementById(`briefing-box-${id}`);
+  const textEl = document.getElementById(`briefing-text-${id}`);
+  const btn = document.querySelector(`.btn-row-briefing[data-id="${id}"]`);
+  
+  if (box && textEl && btn) {
+    box.style.display = 'block';
+    textEl.innerHTML = '<span style="font-style:italic; opacity:0.5;"><i class="fas fa-spinner fa-spin"></i> Compiling brief...</span>';
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Working...';
+    
+    // If not logged in, simulate typing of fallback mockup briefing
+    if (!token) {
+      setTimeout(() => {
+        const mockSummary = "This newsletter contains industry updates on browser technology developments. It details performance acceleration, driver implementations, and core rendering enhancements.";
+        emailDatabase[id].newsletterBriefing = mockSummary;
+        
+        textEl.innerText = '';
+        let index = 0;
+        const typingTimer = setInterval(() => {
+          if (index < mockSummary.length) {
+            textEl.innerText += mockSummary.charAt(index);
+            index++;
+          } else {
+            clearInterval(typingTimer);
+            showToast("Briefing compiled successfully (Demo Mode).");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-magic"></i> Generate Briefing';
+          }
+        }, 10);
+      }, 1000);
+      return;
+    }
+    
+    fetch(`${API_BASE}/brief-newsletter`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ id: id })
+    })
+      .then(res => {
+        if (res.status === 401) {
+          handleSessionExpired();
+          throw new Error("Session expired");
+        }
+        if (!res.ok) throw new Error("Failed to compile summary");
+        return res.json();
+      })
+      .then(data => {
+        if (data.status === "success") {
+          const summary = data.briefing;
+          emailDatabase[id].newsletterBriefing = summary;
+          
+          textEl.innerText = '';
+          let index = 0;
+          const typingTimer = setInterval(() => {
+            if (index < summary.length) {
+              textEl.innerText += summary.charAt(index);
+              index++;
+            } else {
+              clearInterval(typingTimer);
+              showToast("Briefing compiled successfully.");
+            }
+          }, 10);
+        } else {
+          throw new Error(data.message || "Briefing failed");
+        }
+      })
+      .catch(err => {
+        console.error("Summary generation failed: ", err);
+        textEl.innerText = "Error compiling summary. Try again.";
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-magic"></i> Generate Briefing';
+      });
+  }
+}
+
+// Wire OAuth and Settings UI listeners
 document.addEventListener('DOMContentLoaded', () => {
   initOAuth();
   checkAuthStatus();
@@ -934,5 +1155,99 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnLogout = document.getElementById('btn-logout');
   if (btnLogout) {
     btnLogout.addEventListener('click', signOutUser);
+  }
+
+  // Settings Modal Triggers
+  const navLinks = document.querySelectorAll(".nav-links li");
+  navLinks.forEach(link => {
+    const text = link.textContent.trim().toLowerCase();
+    if (text.includes("settings") || text.includes("ai rules")) {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        
+        const token = sessionStorage.getItem("gmail_access_token");
+        if (!token) {
+          showToast("Connect Gmail first to configure custom rules.");
+          return;
+        }
+        
+        document.getElementById("settings-modal").style.display = "flex";
+        loadSettings();
+      });
+    }
+  });
+
+  const btnCloseSettings = document.getElementById("btn-close-settings");
+  const btnCancelSettings = document.getElementById("btn-cancel-settings");
+  const modalOverlay = document.getElementById("settings-modal");
+  
+  if (btnCloseSettings) btnCloseSettings.addEventListener("click", () => modalOverlay.style.display = "none");
+  if (btnCancelSettings) btnCancelSettings.addEventListener("click", () => modalOverlay.style.display = "none");
+  if (modalOverlay) {
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) modalOverlay.style.display = "none";
+    });
+  }
+
+  // Add Newsletter Item to Settings whitelist
+  const btnAddNewsletter = document.getElementById("btn-add-newsletter");
+  const inputNewNewsletter = document.getElementById("input-new-newsletter");
+  if (btnAddNewsletter && inputNewNewsletter) {
+    btnAddNewsletter.addEventListener("click", () => {
+      const val = inputNewNewsletter.value.trim();
+      if (val) {
+        if (!subscribedNewsletters.includes(val)) {
+          subscribedNewsletters.push(val);
+          renderSettingsTags();
+        }
+        inputNewNewsletter.value = "";
+      }
+    });
+    
+    inputNewNewsletter.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        btnAddNewsletter.click();
+      }
+    });
+  }
+
+  // Save Settings to Backend
+  const btnSaveSettings = document.getElementById("btn-save-settings");
+  if (btnSaveSettings) {
+    btnSaveSettings.addEventListener("click", () => {
+      const token = sessionStorage.getItem("gmail_access_token");
+      if (!token) {
+        showToast("Connect your Gmail account first to save settings.");
+        return;
+      }
+      
+      btnSaveSettings.innerText = "Saving...";
+      btnSaveSettings.disabled = true;
+      
+      fetch(`${API_BASE}/settings`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ subscribed_newsletters: subscribedNewsletters })
+      })
+      .then(res => {
+        if (res.status === 401) {
+          handleSessionExpired();
+          throw new Error("Session expired");
+        }
+        if (!res.ok) throw new Error("Save settings failed");
+        return res.json();
+      })
+      .then(data => {
+        showToast("Newsletter rules saved successfully.");
+        modalOverlay.style.display = "none";
+      })
+      .catch(err => {
+        showToast(err.message || "Failed to save settings.");
+      })
+      .finally(() => {
+        btnSaveSettings.innerText = "Save Settings";
+        btnSaveSettings.disabled = false;
+      });
+    });
   }
 });

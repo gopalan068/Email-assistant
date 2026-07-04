@@ -1539,3 +1539,295 @@ body.banner-active .detail-drawer {
   color: var(--color-pine);
 }
 
+/* ── Modal Settings Styles ───────────────────────────────────────────── */
+
+.modal-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(32, 38, 31, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 12000;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 500px;
+  background-color: #ffffff;
+  border: 1px solid var(--color-hairline);
+  box-shadow: 0 16px 64px rgba(32, 38, 31, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.modal-title {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--color-pine);
+}
+
+.btn-close-modal {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: rgba(32, 38, 31, 0.6);
+  transition: color 0.2s ease;
+}
+
+.btn-close-modal:hover {
+  color: #8B2D2D;
+}
+
+.modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-body h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.modal-help-text {
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(32, 38, 31, 0.6);
+}
+
+.newsletter-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 80px;
+  padding: 12px;
+  border: 1px solid var(--color-hairline);
+  background-color: var(--color-paper);
+}
+
+.newsletter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background-color: #ffffff;
+  border: 1px solid var(--color-hairline);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--color-ink);
+}
+
+.newsletter-tag .remove-tag {
+  cursor: pointer;
+  color: #8B2D2D;
+  font-weight: bold;
+}
+
+.modal-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.modal-input-row input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--color-hairline);
+  font-size: 13px;
+  outline: none;
+  background-color: #ffffff;
+}
+
+.modal-input-row input:focus {
+  border-color: var(--color-pine);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-hairline);
+  background-color: rgba(32, 38, 31, 0.02);
+}
+
+.btn-secondary {
+  background-color: transparent !important;
+  color: var(--color-ink) !important;
+  border: 1px solid var(--color-hairline) !important;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(32, 38, 31, 0.05) !important;
+}
+
+/* ── Older Newsletters Section (Gmail-style Single Column Layout) ── */
+
+.older-newsletters-section {
+  margin-top: 48px;
+  border-top: 1px solid var(--color-hairline);
+  padding-top: 32px;
+  margin-bottom: 24px;
+}
+
+.older-newsletters-section .section-label {
+  font-family: 'Fraunces', serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--color-ochre);
+  margin-bottom: 16px;
+}
+
+.gmail-ledger-container {
+  background-color: #ffffff;
+  border: 1px solid var(--color-hairline);
+  box-shadow: 0 4px 16px rgba(32, 38, 31, 0.02);
+  width: 100%;
+}
+
+.gmail-rows-header {
+  display: grid;
+  grid-template-columns: 180px 1fr 120px 150px;
+  padding: 12px 24px;
+  background-color: rgba(32, 38, 31, 0.03);
+  border-bottom: 1px solid var(--color-hairline);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(32, 38, 31, 0.6);
+  text-transform: uppercase;
+}
+
+.gmail-row-wrapper {
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.gmail-row-wrapper:last-child {
+  border-bottom: none;
+}
+
+.gmail-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 120px 150px;
+  padding: 14px 24px;
+  align-items: center;
+  font-size: 13px;
+  cursor: pointer;
+  background-color: #ffffff;
+  transition: background-color 0.2s ease;
+}
+
+.gmail-row:hover {
+  background-color: rgba(47, 93, 69, 0.02);
+}
+
+.gmail-col-from {
+  font-weight: 600;
+  color: var(--color-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 16px;
+}
+
+.gmail-col-subject-wrapper {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 16px;
+}
+
+.gmail-subject {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.gmail-sep {
+  color: rgba(32, 38, 31, 0.3);
+  margin: 0 4px;
+}
+
+.gmail-snippet {
+  color: rgba(32, 38, 31, 0.55);
+  font-weight: 400;
+}
+
+.gmail-col-date {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: rgba(32, 38, 31, 0.6);
+}
+
+.gmail-col-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-row-briefing {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: transparent;
+  border: 1px solid var(--color-hairline);
+  padding: 5px 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-pine);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-row-briefing:hover {
+  background-color: var(--color-pine);
+  color: var(--color-paper);
+  border-color: var(--color-pine);
+}
+
+.btn-row-briefing i {
+  font-size: 10px;
+}
+
+.row-briefing-box {
+  background-color: var(--color-paper);
+  border-top: 1px dashed var(--color-hairline);
+  padding: 14px 24px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-ink);
+  border-left: 4px solid var(--color-pine);
+}
+
+.row-briefing-box .briefing-header {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-pine);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.row-briefing-box .briefing-text {
+  font-weight: 400;
+}
+
+
