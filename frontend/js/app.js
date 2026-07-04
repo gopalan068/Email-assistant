@@ -561,6 +561,7 @@ function openEmailDetails(emailId) {
 
     if (typingTimer) clearInterval(typingTimer);
     drawer.classList.add('open');
+    document.body.classList.add('drawer-open');
   }
 }
 
@@ -572,6 +573,7 @@ document.addEventListener('keydown', (e) => {
 
 function closeDrawer() {
   drawer.classList.remove('open');
+  document.body.classList.remove('drawer-open');
   const rows = document.querySelectorAll('.ledger-row');
   rows.forEach(r => r.classList.remove('active'));
   activeEmailId = null;
