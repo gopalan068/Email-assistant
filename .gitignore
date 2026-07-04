@@ -2,9 +2,9 @@ node_modules/
 .env
 .env.example
 credentials.json
-backend/token.json
-backend/inbox_cache.json
-backend/digest_cache.json
+backend/token*.json
+backend/inbox_cache*.json
+backend/digest_cache*.json
 backend/__pycache__/
 *.pyc
 .vercel/

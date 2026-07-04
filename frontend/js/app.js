@@ -239,6 +239,40 @@ const mockDigest = [
 
 let emailDatabase = {};
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000/api";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "434379829289-593k64codcrpeeuqtenkl1gmp6sqjo0l.apps.googleusercontent.com";
+let tokenClient;
+
+function getAuthHeaders() {
+  const token = sessionStorage.getItem("gmail_access_token");
+  return {
+    "Authorization": `Bearer ${token}`,
+    "Content-Type": "application/json"
+  };
+}
+
+function handleSessionExpired() {
+  sessionStorage.removeItem("gmail_access_token");
+  document.getElementById('session-expired-banner').style.display = 'flex';
+  document.body.classList.add('banner-active');
+  checkAuthStatus();
+}
+
+function fetchUserProfile(token) {
+  return fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    headers: { "Authorization": `Bearer ${token}` }
+  })
+  .then(res => {
+    if (!res.ok) throw new Error("Profile fetch failed");
+    return res.json();
+  })
+  .then(profile => {
+    document.getElementById('profile-name').textContent = profile.name || profile.given_name || "Gopal";
+    document.getElementById('profile-email').textContent = profile.email || profile.email;
+  })
+  .catch(err => {
+    console.warn("Could not load Google user profile info dynamically: ", err);
+  });
+}
 
 // DOM Selectors
 const drawer = document.getElementById('email-detail-drawer');
@@ -517,10 +551,14 @@ btnDraftReply.addEventListener('click', () => {
 
   fetch(`${API_BASE}/draft-reply`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify({ id: activeEmailId })
   })
     .then(res => {
+      if (res.status === 401) {
+        handleSessionExpired();
+        throw new Error("Session expired");
+      }
       if (!res.ok) throw new Error("Backend response error");
       return res.json();
     })
@@ -587,8 +625,19 @@ btnSyncEmails.addEventListener('click', () => {
   syncTimeText.innerText = "Syncing logs...";
   ledgerGridContainer.classList.add('shimmer-active');
 
-  fetch(`${API_BASE}/sync`, { method: "POST" })
+  fetch(`${API_BASE}/sync`, { 
+    method: "POST",
+    headers: getAuthHeaders()
+  })
     .then(res => {
+      if (res.status === 401) {
+        handleSessionExpired();
+        throw new Error("Session expired");
+      }
+      if (res.status === 429) {
+        showToast("Sync rate limit reached. Please wait a moment.");
+        throw new Error("Sync rate limit reached");
+      }
       if (!res.ok) return res.json().then(d => { throw new Error(d.message || "Sync failed") });
       return res.json();
     })
@@ -614,8 +663,15 @@ btnRegenerateDigest.addEventListener('click', () => {
   btnRegenerateDigest.innerText = "Summarizing...";
   btnRegenerateDigest.disabled = true;
 
-  fetch(`${API_BASE}/digest`)
-    .then(res => res.json())
+  fetch(`${API_BASE}/digest`, { headers: getAuthHeaders() })
+    .then(res => {
+      if (res.status === 401) {
+        handleSessionExpired();
+        throw new Error("Session expired");
+      }
+      if (!res.ok) throw new Error("HTTP error");
+      return res.json();
+    })
     .then(data => {
       btnRegenerateDigest.innerText = "Regenerate Briefing";
       btnRegenerateDigest.disabled = false;
@@ -733,8 +789,15 @@ document.addEventListener('click', (e) => {
 
 // Load data from Backend or fallback
 function loadDashboardData() {
-  fetch(`${API_BASE}/inbox`)
+  const token = sessionStorage.getItem("gmail_access_token");
+  if (!token) return;
+
+  fetch(`${API_BASE}/inbox`, { headers: getAuthHeaders() })
     .then(res => {
+      if (res.status === 401) {
+        handleSessionExpired();
+        throw new Error("Session expired");
+      }
       if (!res.ok) throw new Error("HTTP error");
       return res.json();
     })
@@ -746,8 +809,12 @@ function loadDashboardData() {
       renderInbox(mockEmailDatabase);
     });
 
-  fetch(`${API_BASE}/digest`)
+  fetch(`${API_BASE}/digest`, { headers: getAuthHeaders() })
     .then(res => {
+      if (res.status === 401) {
+        handleSessionExpired();
+        throw new Error("Session expired");
+      }
       if (!res.ok) throw new Error("HTTP error");
       return res.json();
     })
@@ -760,5 +827,112 @@ function loadDashboardData() {
     });
 }
 
-// Initialize Dashboard
-window.addEventListener('DOMContentLoaded', loadDashboardData);
+function checkAuthStatus() {
+  const token = sessionStorage.getItem("gmail_access_token");
+  const profileLoggedOut = document.getElementById("profile-logged-out");
+  const profileLoggedIn = document.getElementById("profile-logged-in");
+  const btnHeaderLogin = document.getElementById("btn-header-login");
+  const btnSyncEmails = document.getElementById("btn-sync-emails");
+  
+  if (token) {
+    if (profileLoggedOut) profileLoggedOut.style.display = "none";
+    if (profileLoggedIn) profileLoggedIn.style.display = "block";
+    if (btnHeaderLogin) btnHeaderLogin.style.display = "none";
+    if (btnSyncEmails) btnSyncEmails.style.display = "block";
+    fetchUserProfile(token);
+    loadDashboardData();
+  } else {
+    if (profileLoggedOut) profileLoggedOut.style.display = "block";
+    if (profileLoggedIn) profileLoggedIn.style.display = "none";
+    if (btnHeaderLogin) btnHeaderLogin.style.display = "block";
+    if (btnSyncEmails) btnSyncEmails.style.display = "none";
+    // Render fallback mock data immediately for demonstration
+    renderInbox(mockEmailDatabase);
+    renderDigest(mockDigest);
+  }
+}
+
+function initOAuth() {
+  if (typeof google === 'undefined') {
+    console.warn("Google client library not loaded yet, retrying in 500ms...");
+    setTimeout(initOAuth, 500);
+    return;
+  }
+  
+  console.log("Initializing Google OAuth with Client ID:", GOOGLE_CLIENT_ID);
+  
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+    callback: (response) => {
+      if (response.error) {
+        console.error("OAuth Error: ", response);
+        showToast("Authentication failed. Please try again.");
+        return;
+      }
+      
+      if (response.access_token) {
+        sessionStorage.setItem("gmail_access_token", response.access_token);
+        
+        // Hide banners and update displays
+        document.getElementById('session-expired-banner').style.display = 'none';
+        document.body.classList.remove('banner-active');
+        
+        checkAuthStatus();
+        showToast("Logged in successfully.");
+      }
+    },
+  });
+}
+
+function signOutUser() {
+  const token = sessionStorage.getItem("gmail_access_token");
+  if (token) {
+    try {
+      google.accounts.oauth2.revoke(token, () => {
+        console.log("Token revoked server-side.");
+      });
+    } catch (e) {
+      console.warn("Could not revoke token on Google servers:", e);
+    }
+  }
+  sessionStorage.removeItem("gmail_access_token");
+  document.getElementById('session-expired-banner').style.display = 'none';
+  document.body.classList.remove('banner-active');
+  checkAuthStatus();
+  showToast("Logged out successfully.");
+}
+
+// Wire OAuth UI listeners
+document.addEventListener('DOMContentLoaded', () => {
+  initOAuth();
+  checkAuthStatus();
+  
+  const handleLoginClick = () => {
+    if (tokenClient) {
+      tokenClient.requestAccessToken();
+    } else {
+      showToast("Google OAuth library is still loading. Please wait a moment.");
+    }
+  };
+  
+  const btnSidebarLogin = document.getElementById('btn-sidebar-login');
+  if (btnSidebarLogin) {
+    btnSidebarLogin.addEventListener('click', handleLoginClick);
+  }
+  
+  const btnHeaderLogin = document.getElementById('btn-header-login');
+  if (btnHeaderLogin) {
+    btnHeaderLogin.addEventListener('click', handleLoginClick);
+  }
+  
+  const btnBannerReauth = document.getElementById('btn-banner-reauth');
+  if (btnBannerReauth) {
+    btnBannerReauth.addEventListener('click', handleLoginClick);
+  }
+  
+  const btnLogout = document.getElementById('btn-logout');
+  if (btnLogout) {
+    btnLogout.addEventListener('click', signOutUser);
+  }
+});

@@ -96,6 +96,12 @@ def get_gmail_service():
                     
     return build('gmail', 'v1', credentials=creds)
 
+def get_gmail_service_for_token(access_token):
+    """Builds a Gmail API service client using a dynamic OAuth access token."""
+    from google.oauth2.credentials import Credentials
+    creds = Credentials(token=access_token)
+    return build('gmail', 'v1', credentials=creds)
+
 def decode_body_data(data):
     """Safely decodes base64url data."""
     try:
@@ -146,15 +152,12 @@ def extract_parts_body(parts):
         return soup.get_text(separator='\n')
     return ""
 
-def fetch_recent_emails(limit=30):
-    """Fetches list of recent emails from Gmail, returning clean intermediate data."""
+def fetch_recent_emails(access_token, limit=30):
+    """Fetches list of recent emails from Gmail using a dynamic access token, returning clean intermediate data."""
     try:
-        service = get_gmail_service()
-    except FileNotFoundError as e:
-        print(e)
-        return []
+        service = get_gmail_service_for_token(access_token)
     except Exception as e:
-        print(f"Authentication/Setup error with Gmail service: {e}")
+        print(f"Failed to initialize Gmail service with token: {e}")
         return []
 
     print(f"Fetching recent {limit} messages...")

@@ -1,6 +1,10 @@
 import os
 import sys
 import json
+import hashlib
+import time
+import re
+import requests
 from flask import Flask, jsonify, request
 
 # Ensure backend directory is in python path
@@ -24,6 +28,94 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+GOOGLE_CLIENT_ID = os.environ["GOOGLE_CLIENT_ID"]  # Must be set — fail loudly on startup if missing
+
+# Token Cache structure: { hash: (email, cache_expiry) }
+token_verif_cache = {}
+
+def verify_token_and_get_email(token):
+    if not token:
+        print("[Debug Auth] No token provided in the Authorization header!")
+        return None
+    
+    # Use token hash as key to avoid storing raw token in memory structures
+    token_hash = hashlib.sha256(token.encode('utf-8')).hexdigest()
+    now = time.time()
+    
+    # Opportunistic cleanup to prevent memory leaks
+    if len(token_verif_cache) > 100:
+        expired_keys = [k for k, v in token_verif_cache.items() if now >= v[1]]
+        for k in expired_keys:
+            token_verif_cache.pop(k, None)
+            
+    if token_hash in token_verif_cache:
+        email, cache_expiry = token_verif_cache[token_hash]
+        if now < cache_expiry:
+            return email
+            
+    try:
+        resp = requests.get("https://oauth2.googleapis.com/tokeninfo", params={"access_token": token})
+        if resp.status_code != 200:
+            print(f"[Auth Error] tokeninfo returned status {resp.status_code}: {resp.text}")
+            return None
+        data = resp.json()
+        
+        # Verify audience matches our Client ID (checking aud, issued_to, or audience)
+        client_id = data.get("aud") or data.get("issued_to") or data.get("audience")
+        if client_id != GOOGLE_CLIENT_ID:
+            print(f"[Auth Error] Audience mismatch: got {client_id}, expected {GOOGLE_CLIENT_ID}")
+            return None
+            
+        # Verify scopes include gmail.readonly
+        scope = data.get("scope", "")
+        if "https://www.googleapis.com/auth/gmail.readonly" not in scope:
+            print("[Auth Error] Insufficient scope")
+            return None
+            
+        email = data.get("email")
+        if email:
+            # Cache verification status for 60 seconds
+            token_verif_cache[token_hash] = (email, now + 60.0)
+        return email
+    except Exception as e:
+        print(f"[Auth Error] Failed to contact tokeninfo: {e}")
+        return None
+
+def sanitize_filename_suffix(email):
+    # Allow alphanumeric characters, dot, dash, underscore, and plus
+    if not email or not re.match(r"^[a-zA-Z0-9_\.\-\+]+@[a-zA-Z0-9_\.\-]+\.[a-zA-Z]{2,}$", email):
+        raise ValueError("Invalid email format")
+    # Replace @, ., and + with underscores to make it filesystem safe
+    return email.replace("@", "_").replace(".", "_").replace("+", "_")
+
+def get_user_cache_paths(email):
+    suffix = sanitize_filename_suffix(email)
+    inbox_path = os.path.join(backend_dir, f"inbox_cache_{suffix}.json")
+    digest_path = os.path.join(backend_dir, f"digest_cache_{suffix}.json")
+    return inbox_path, digest_path
+
+last_sync_times = {}
+
+def check_sync_rate_limit(email):
+    now = time.time()
+    
+    # Opportunistic cleanup of sync timestamps
+    if len(last_sync_times) > 200:
+        stale_keys = [k for k, last in last_sync_times.items() if now - last > 60.0]
+        for k in stale_keys:
+            last_sync_times.pop(k, None)
+            
+    last_time = last_sync_times.get(email, 0)
+    if now - last_time < 15.0:
+        return False
+    last_sync_times[email] = now
+    return True
+
+def get_token_from_request():
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        return auth_header.split(" ")[1]
+    return None
 
 # Initialize spam filter
 spam_filter = SpamFilter()
@@ -189,35 +281,51 @@ DEFAULT_MOCK_DIGEST = [
 # Import mocks from the file we just created
 from backend.mock_data import DEFAULT_MOCK_INBOX, DEFAULT_MOCK_DIGEST
 
-def load_cached_data():
+def load_cached_data(email=None):
     """Loads inbox and digest cached datasets, fallbacks to mock if empty."""
     inbox = DEFAULT_MOCK_INBOX
     digest = DEFAULT_MOCK_DIGEST
     
-    if os.path.exists(inbox_cache_path):
+    inbox_path, digest_path = inbox_cache_path, digest_cache_path
+    if email:
         try:
-            with open(inbox_cache_path, "r", encoding="utf-8") as f:
+            inbox_path, digest_path = get_user_cache_paths(email)
+        except Exception as e:
+            print(f"Sanitization error: {e}")
+            return inbox, digest
+            
+    if os.path.exists(inbox_path):
+        try:
+            with open(inbox_path, "r", encoding="utf-8") as f:
                 inbox = json.load(f)
         except Exception as e:
             print(f"Error loading inbox cache: {e}")
             
-    if os.path.exists(digest_cache_path):
+    if os.path.exists(digest_path):
         try:
-            with open(digest_cache_path, "r", encoding="utf-8") as f:
+            with open(digest_path, "r", encoding="utf-8") as f:
                 digest = json.load(f)
         except Exception as e:
             print(f"Error loading digest cache: {e}")
             
     return inbox, digest
 
-def save_cache(inbox_data, digest_data):
+def save_cache(email, inbox_data, digest_data):
     """Saves inbox and digest datasets to persistent JSON caches."""
+    inbox_path, digest_path = inbox_cache_path, digest_cache_path
+    if email:
+        try:
+            inbox_path, digest_path = get_user_cache_paths(email)
+        except Exception as e:
+            print(f"Sanitization error: {e}")
+            return
+            
     try:
-        with open(inbox_cache_path, "w", encoding="utf-8") as f:
+        with open(inbox_path, "w", encoding="utf-8") as f:
             json.dump(inbox_data, f, indent=2, ensure_ascii=False)
-        with open(digest_cache_path, "w", encoding="utf-8") as f:
+        with open(digest_path, "w", encoding="utf-8") as f:
             json.dump(digest_data, f, indent=2, ensure_ascii=False)
-        print("Inbox and Digest persistently cached.")
+        print(f"Inbox and Digest persistently cached for user {email}.")
     except Exception as e:
         print(f"Error saving persistent caches: {e}")
 
@@ -231,24 +339,46 @@ def add_cors_headers(response):
 
 @app.route('/api/inbox', methods=['GET'])
 def get_inbox():
-    inbox, _ = load_cached_data()
+    token = get_token_from_request()
+    email = verify_token_and_get_email(token)
+    if not email:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+        
+    inbox, _ = load_cached_data(email)
     return jsonify(inbox)
 
 @app.route('/api/digest', methods=['GET'])
 def get_digest():
-    _, digest = load_cached_data()
+    token = get_token_from_request()
+    email = verify_token_and_get_email(token)
+    if not email:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+        
+    _, digest = load_cached_data(email)
     return jsonify(digest)
 
 @app.route('/api/sync', methods=['POST'])
 def sync_emails():
+    token = get_token_from_request()
+    email = verify_token_and_get_email(token)
+    if not email:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+        
+    # Enforce sync rate limit (1 sync per 15s per email)
+    if not check_sync_rate_limit(email):
+        return jsonify({
+            "status": "error",
+            "message": "Sync rate limit reached. Please wait a moment."
+        }), 429
+        
     try:
-        # Load Gmail Fetch Layer
-        print("Starting inbox sync...")
-        raw_emails = fetch_recent_emails(limit=30)
+        # Load Gmail Fetch Layer using dynamic token
+        print(f"Starting inbox sync for user: {email}...")
+        raw_emails = fetch_recent_emails(token, limit=30)
         if not raw_emails:
             return jsonify({
                 "status": "error",
-                "message": "Gmail OAuth token missing or failed to fetch. Please verify setup."
+                "message": "Failed to fetch emails or inbox is empty."
             }), 400
 
         spam_emails = []
@@ -256,34 +386,32 @@ def sync_emails():
         candidate_emails = []  # Emails that will go through the spam + importance pipeline
 
         # ── Step 0: Newsletter Pre-filter (runs BEFORE spam ML) ──────────────
-        # Newsletters must be separated first because the Enron-trained spam model
-        # will mis-classify promotional/newsletter emails as spam (they share vocabulary).
         print("Pre-filtering newsletters...")
         from backend.classify_importance import is_newsletter_heuristic
-        for email in raw_emails:
-            if is_newsletter_heuristic(email):
-                email["isAiFlagged"] = False
-                email["aiStatus"] = "NEWSLETTER"
-                email["meta"] = "Inbox / Update"
-                newsletter_emails.append(email)
+        for email_data in raw_emails:
+            if is_newsletter_heuristic(email_data):
+                email_data["isAiFlagged"] = False
+                email_data["aiStatus"] = "NEWSLETTER"
+                email_data["meta"] = "Inbox / Update"
+                newsletter_emails.append(email_data)
             else:
-                candidate_emails.append(email)
+                candidate_emails.append(email_data)
 
         # ── Step 1: Spam Filter (only runs on non-newsletter emails) ─────────
         print(f"Filtering spam emails from {len(candidate_emails)} candidate emails...")
         clean_emails = []
-        for email in candidate_emails:
-            subj = email["subject"]
-            sender = f"{email['from_name']} <{email['from_email']}>"
-            body = email["body"]
+        for email_data in candidate_emails:
+            subj = email_data["subject"]
+            sender = f"{email_data['from_name']} <{email_data['from_email']}>"
+            body = email_data["body"]
 
             if spam_filter.is_spam(subj, sender, body):
-                email["isAiFlagged"] = False
-                email["aiStatus"] = "SPAM"
-                email["meta"] = "Spam / Phishing"
-                spam_emails.append(email)
+                email_data["isAiFlagged"] = False
+                email_data["aiStatus"] = "SPAM"
+                email_data["meta"] = "Spam / Phishing"
+                spam_emails.append(email_data)
             else:
-                clean_emails.append(email)
+                clean_emails.append(email_data)
 
         # ── Step 2: Importance Classification (heuristics + ML + LLM) ───────
         print(f"Running importance classifier on {len(clean_emails)} clean emails...")
@@ -297,22 +425,22 @@ def sync_emails():
         inbox_data = {}
         all_emails = classified_emails + newsletter_emails + spam_emails
 
-        for email in all_emails:
-            msg_id = email["id"]
+        for email_data in all_emails:
+            msg_id = email_data["id"]
             inbox_data[msg_id] = {
-                "from": email["from_name"],
-                "email": email["from_email"],
-                "date": email["date"],
-                "subject": email["subject"],
-                "meta": email["meta"],
-                "isAiFlagged": email["isAiFlagged"],
-                "aiStatus": email["aiStatus"],
-                "body": email["body"],
+                "from": email_data["from_name"],
+                "email": email_data["from_email"],
+                "date": email_data["date"],
+                "subject": email_data["subject"],
+                "meta": email_data["meta"],
+                "isAiFlagged": email_data["isAiFlagged"],
+                "aiStatus": email_data["aiStatus"],
+                "body": email_data["body"],
                 "aiReply": ""  # Handled on-demand via /api/draft-reply
             }
 
-        # Write to cache
-        save_cache(inbox_data, digest_data)
+        # Write to user-specific cache
+        save_cache(email, inbox_data, digest_data)
 
         return jsonify({
             "status": "success",
@@ -336,41 +464,47 @@ def sync_emails():
 @app.route('/api/draft-reply', methods=['POST'])
 def draft_reply():
     """Generates an LLM response draft for a specific email on-demand (Phase 8)."""
+    token = get_token_from_request()
+    email = verify_token_and_get_email(token)
+    if not email:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+        
     try:
         req_data = request.get_json() or {}
         email_id = req_data.get("id")
         if not email_id:
             return jsonify({"status": "error", "message": "Missing email 'id' parameter."}), 400
             
-        # Load inbox cache to read email details
-        inbox, _ = load_cached_data()
-        email = inbox.get(str(email_id))
+        # Load user-specific inbox cache
+        inbox, digest = load_cached_data(email)
+        email_item = inbox.get(str(email_id))
         
-        if not email:
+        if not email_item:
             return jsonify({"status": "error", "message": "Email not found."}), 404
             
-        print(f"[LLM Draft] Creating draft response for: {email['subject']} from {email['from']}")
+        print(f"[LLM Draft] Creating draft response for: {email_item['subject']} from {email_item['from']}")
         
-        # Call LLM to generate response draft
+        # Call LLM to generate response draft (personalized with the user's name)
+        first_name = email.split("@")[0].split("+")[0].split(".")[0].split("_")[0].capitalize()
         system_instruction = (
-            "You are Gopal's helpful email writing assistant. "
-            "Write a brief, professional, and friendly email reply on behalf of Gopal. "
-            "Address the sender by name. Keep the reply short (3 to 4 sentences maximum) "
-            "and sign off as 'Gopal'. Do not add subject lines or placeholders."
+            f"You are {first_name}'s helpful email writing assistant. "
+            f"Write a brief, professional, and friendly email reply on behalf of {first_name}. "
+            f"Address the sender by name. Keep the reply short (3 to 4 sentences maximum) "
+            f"and sign off as '{first_name}'. Do not add subject lines or placeholders."
         )
         
         prompt = (
             f"Please draft a reply to the following email:\n\n"
-            f"From: {email['from']} <{email['email']}>\n"
-            f"Subject: {email['subject']}\n"
-            f"Body:\n{email['body']}"
+            f"From: {email_item['from']} <{email_item['email']}>\n"
+            f"Subject: {email_item['subject']}\n"
+            f"Body:\n{email_item['body']}"
         )
         
         draft_text = call_llm(prompt, system_instruction=system_instruction, json_mode=False)
         
         # Save draft back into cache so it persists if the user switches emails
-        inbox[email_id]["aiReply"] = draft_text
-        save_cache(inbox, _)
+        inbox[str(email_id)]["aiReply"] = draft_text
+        save_cache(email, inbox, digest)
         
         return jsonify({
             "status": "success",
@@ -387,4 +521,5 @@ def draft_reply():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     print(f"Starting Mail Assist backend server on http://localhost:{port}...")
-    app.run(host="0.0.0.0", port=port, debug=True)
+    print(f"Active Google Client ID configured on backend: {GOOGLE_CLIENT_ID}")
+    app.run(host="0.0.0.0", port=port, debug=os.environ.get("FLASK_DEBUG") == "1")

@@ -1291,13 +1291,251 @@ body {
     gap: 12px;
   }
 
-  .header-utilities {
-    width: 100%;
-  }
-
   .btn-sync {
     width: 100%;
     justify-content: center;
     padding: 8px;
   }
 }
+
+/* ── OAuth Login & Session Expiry Layouts ────────────────────────────── */
+
+.login-layout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--color-paper);
+  padding: 24px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  overflow-y: auto;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  background-color: #ffffff;
+  border: 1px solid var(--color-hairline);
+  padding: 40px 32px;
+  box-shadow: 0 12px 48px rgba(32, 38, 31, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.login-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 26px;
+  text-align: center;
+  color: var(--color-pine);
+  margin-bottom: 12px;
+}
+
+.login-subtitle {
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(32, 38, 31, 0.6);
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-features {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 36px;
+  width: 100%;
+  border-top: 1px solid var(--color-hairline);
+  border-bottom: 1px solid var(--color-hairline);
+  padding: 24px 0;
+}
+
+.feature-item {
+  display: flex;
+  gap: 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-ink);
+}
+
+.feature-item i {
+  color: var(--color-pine);
+  font-size: 16px;
+  margin-top: 2px;
+  width: 18px;
+  text-align: center;
+}
+
+.btn-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 24px;
+  background-color: var(--color-pine);
+  color: var(--color-paper);
+  border: 1px solid var(--color-pine);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-login:hover {
+  background-color: var(--color-paper);
+  color: var(--color-pine);
+}
+
+.btn-login i {
+  font-size: 16px;
+}
+
+.login-footer {
+  font-size: 11px;
+  color: rgba(32, 38, 31, 0.4);
+  text-align: center;
+  margin-top: 20px;
+  font-style: italic;
+}
+
+/* Logout Button */
+.btn-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--color-hairline);
+  padding: 6px 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(32, 38, 31, 0.6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.btn-logout:hover {
+  border-color: #8B2D2D;
+  color: #8B2D2D;
+  background-color: rgba(139, 45, 45, 0.03);
+}
+
+/* Notice Banner */
+.notice-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #8B2D2D;
+  color: #ffffff;
+  padding: 8px 24px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 11000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  font-size: 13px;
+  font-weight: 500;
+  height: 44px;
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.banner-content i {
+  font-size: 15px;
+}
+
+.btn-banner-login {
+  background-color: #ffffff;
+  color: #8B2D2D;
+  border: 1px solid #ffffff;
+  padding: 4px 14px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-banner-login:hover {
+  background-color: transparent;
+  color: #ffffff;
+}
+
+/* Shift sidebar down if notice banner is active */
+body.banner-active .sidebar {
+  top: 44px;
+  height: calc(100vh - 44px);
+}
+body.banner-active .main-content {
+  margin-top: 44px;
+}
+body.banner-active .detail-drawer {
+  top: 44px;
+  height: calc(100vh - 44px);
+}
+
+/* Connect Gmail Buttons */
+.btn-connect-gmail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background-color: var(--color-pine);
+  color: var(--color-paper);
+  border: 1px solid var(--color-pine);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-connect-gmail:hover {
+  background-color: var(--color-paper);
+  color: var(--color-pine);
+}
+
+.btn-connect-gmail-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: var(--color-pine);
+  color: var(--color-paper);
+  border: 1px solid var(--color-pine);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-connect-gmail-header:hover {
+  background-color: transparent;
+  color: var(--color-pine);
+}
+

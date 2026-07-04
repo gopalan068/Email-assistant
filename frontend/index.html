@@ -11,9 +11,20 @@
 
   <!-- External Stylesheet -->
   <link rel="stylesheet" href="./css/styles.css">
+  <!-- Google Identity Services client library -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
+
+  <!-- Session Expiration Notice Banner -->
+  <div id="session-expired-banner" class="notice-banner" style="display: none;">
+    <div class="banner-content">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>Your session has expired. Please sign in again to resume ledger synchronization.</span>
+    </div>
+    <button class="btn-banner-login" id="btn-banner-reauth">Sign In</button>
+  </div>
 
   <!-- Left Sidebar Navigation -->
   <aside class="sidebar">
@@ -37,8 +48,14 @@
         <span>AI TRIAGE ACTIVE</span>
       </div>
       <div class="account-info">
-        <span class="account-name">Gopal</span>
-        <div style="font-size: 11px; opacity: 0.6; font-family: 'IBM Plex Mono', monospace;">gopalan0555@gmail.com</div>
+        <div id="profile-logged-out">
+          <button class="btn-connect-gmail" id="btn-sidebar-login"><i class="fab fa-google"></i> Connect Gmail</button>
+        </div>
+        <div id="profile-logged-in" style="display: none;">
+          <span class="account-name" id="profile-name">Gopal</span>
+          <div id="profile-email" style="font-size: 11px; opacity: 0.6; font-family: 'IBM Plex Mono', monospace; word-break: break-all; margin-bottom: 8px;">gopalan0555@gmail.com</div>
+          <button class="btn-logout" id="btn-logout" title="Sign Out"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+        </div>
       </div>
     </div>
   </aside>
@@ -54,9 +71,13 @@
       <h1 class="status-header" id="status-header-text">Thursday. <span class="highlight">2 letters</span> need you.
       </h1>
       <div class="header-utilities">
-        <button class="btn-sync" id="btn-sync-emails">
+        <button class="btn-sync" id="btn-sync-emails" style="display: none;">
           <i class="fas fa-sync-alt" id="sync-icon"></i>
           <span id="sync-time-text">Synced 2m ago</span>
+        </button>
+        <button class="btn-connect-gmail-header" id="btn-header-login">
+          <i class="fab fa-google"></i>
+          <span>Connect Gmail</span>
         </button>
       </div>
     </header>
