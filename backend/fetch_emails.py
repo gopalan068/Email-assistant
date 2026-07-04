@@ -93,6 +93,8 @@ def get_gmail_service():
                         token.write(creds.to_json())
                 except Exception as e:
                     print(f"Could not save token.json file locally: {e}")
+                    
+    return build('gmail', 'v1', credentials=creds)
 
 def decode_body_data(data):
     """Safely decodes base64url data."""
