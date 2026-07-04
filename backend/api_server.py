@@ -490,16 +490,16 @@ def sync_emails():
             else:
                 candidate_emails.append(email_data)
 
-        # Enforce hard limit of at most 3 newsletters (newest first)
+        # Enforce hard limit of at most 8 newsletters (newest first)
         older_newsletter_emails = []
-        if len(newsletter_emails) > 3:
-            older_newsletter_emails = newsletter_emails[3:18]  # additional 15 emails at max
+        if len(newsletter_emails) > 8:
+            older_newsletter_emails = newsletter_emails[8:23]  # additional 15 emails at max
             for email_data in older_newsletter_emails:
                 email_data["isAiFlagged"] = False
                 email_data["aiStatus"] = "OLDER_NEWSLETTER"
                 email_data["meta"] = "Inbox / Older Updates"
-            print(f"Limiting newsletters: kept 3 active newsletters, routed {len(older_newsletter_emails)} to older section.")
-            newsletter_emails = newsletter_emails[:3]
+            print(f"Limiting newsletters: kept 8 active newsletters, routed {len(older_newsletter_emails)} to older section.")
+            newsletter_emails = newsletter_emails[:8]
 
         # ── Step 1: Spam Filter (only runs on non-newsletter emails) ─────────
         print(f"Filtering spam emails from {len(candidate_emails)} candidate emails...")
