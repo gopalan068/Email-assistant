@@ -1931,6 +1931,7 @@ body.banner-active .detail-drawer {
 
 .row-briefing-box .briefing-text {
   font-weight: 400;
+  white-space: pre-line;
 }
 
 body.drawer-open {

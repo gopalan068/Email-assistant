@@ -356,6 +356,15 @@ function formatDate(dateStr) {
   }
 }
 
+// Helper to parse dates for sorting
+function parseEmailDate(dateStr) {
+  if (!dateStr) return 0;
+  // Clean parentheses like "(10:15 AM)" for mock data parsing
+  const cleaned = dateStr.replace(/\s*\(.*\)\s*/g, '');
+  const parsed = Date.parse(cleaned);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
 // Render Inbox Ledger
 function renderInbox(data) {
   emailDatabase = data;
@@ -381,13 +390,25 @@ function renderInbox(data) {
   let spamCount = 0;
   let olderCount = 0;
 
-  Object.keys(emailDatabase).forEach(id => {
-    const email = emailDatabase[id];
+  // Convert email database to an array and sort descending (newest first)
+  const sortedEmails = Object.keys(emailDatabase).map(id => {
+    return { id: id, ...emailDatabase[id] };
+  }).sort((a, b) => {
+    return parseEmailDate(b.date) - parseEmailDate(a.date);
+  });
+
+  sortedEmails.forEach(email => {
+    const id = email.id;
 
     let columnContainer;
     let rowClass = 'ledger-row';
 
     const status = (email.aiStatus || "").toUpperCase();
+
+    if (status === 'NEWSLETTER') {
+      // Skipped in standard columns as they are already displayed in the digest/newsletter section
+      return;
+    }
 
     if (status === 'OLDER_NEWSLETTER') {
       if (colOlderNewsletters) {
@@ -485,6 +506,11 @@ function renderInbox(data) {
 function renderDigest(digestList) {
   const digestGrid = document.querySelector('.digest-ledger-grid');
   digestGrid.innerHTML = '';
+
+  const countEl = document.getElementById('sidebar-digest-count');
+  if (countEl) {
+    countEl.innerText = `[${digestList ? digestList.length : 0}]`;
+  }
 
   if (!digestList || digestList.length === 0) {
     digestGrid.innerHTML = `
@@ -607,42 +633,45 @@ btnDraftReply.addEventListener('click', () => {
         // Cache in local memory database
         emailDatabase[activeEmailId].aiReply = replyText;
 
-        draftContent.innerText = '';
+        draftContent.textContent = '';
         let index = 0;
+        let typedText = '';
         if (typingTimer) clearInterval(typingTimer);
 
         typingTimer = setInterval(() => {
           if (index < replyText.length) {
-            draftContent.innerText += replyText.charAt(index);
+            typedText += replyText.charAt(index);
+            draftContent.textContent = typedText;
             index++;
           } else {
             clearInterval(typingTimer);
             showToast("AI response drafted successfully.");
           }
-        }, 10);
+        }, 15);
       } else {
         throw new Error(data.message || "Failed to draft reply");
       }
     })
     .catch(err => {
       console.error("Draft generation failed, falling back to simulated typing: ", err);
-      // Fallback to local default mockup draft text if API unavailable
       const emailData = emailDatabase[activeEmailId];
       const replyText = emailData && emailData.aiReply ? emailData.aiReply : "Hi, thank you for writing. I will look into this and get back to you soon.\n\nBest regards,\nGopal";
 
-      draftContent.innerText = '';
+      draftContent.textContent = '';
       let index = 0;
+      let typedText = '';
       if (typingTimer) clearInterval(typingTimer);
 
       typingTimer = setInterval(() => {
         if (index < replyText.length) {
-          draftContent.innerText += replyText.charAt(index);
+          typedText += replyText.charAt(index);
+          draftContent.textContent = typedText;
           index++;
         } else {
           clearInterval(typingTimer);
           showToast("AI response drafted successfully.");
         }
-      }, 10);
+      }, 15);
     });
 });
 
@@ -1065,11 +1094,13 @@ function generateOlderNewsletterBriefing(id) {
         const mockSummary = "This newsletter contains industry updates on browser technology developments. It details performance acceleration, driver implementations, and core rendering enhancements.";
         emailDatabase[id].newsletterBriefing = mockSummary;
         
-        textEl.innerText = '';
+        textEl.textContent = '';
         let index = 0;
+        let typedBrief = '';
         const typingTimer = setInterval(() => {
           if (index < mockSummary.length) {
-            textEl.innerText += mockSummary.charAt(index);
+            typedBrief += mockSummary.charAt(index);
+            textEl.textContent = typedBrief;
             index++;
           } else {
             clearInterval(typingTimer);
@@ -1077,7 +1108,7 @@ function generateOlderNewsletterBriefing(id) {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-magic"></i> Generate Briefing';
           }
-        }, 10);
+        }, 15);
       }, 1000);
       return;
     }
@@ -1100,17 +1131,19 @@ function generateOlderNewsletterBriefing(id) {
           const summary = data.briefing;
           emailDatabase[id].newsletterBriefing = summary;
           
-          textEl.innerText = '';
+          textEl.textContent = '';
           let index = 0;
+          let typedBrief = '';
           const typingTimer = setInterval(() => {
             if (index < summary.length) {
-              textEl.innerText += summary.charAt(index);
+              typedBrief += summary.charAt(index);
+              textEl.textContent = typedBrief;
               index++;
             } else {
               clearInterval(typingTimer);
               showToast("Briefing compiled successfully.");
             }
-          }, 10);
+          }, 15);
         } else {
           throw new Error(data.message || "Briefing failed");
         }
@@ -1178,6 +1211,61 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
+
+  // Inbox & Digests Navigation Scroll Triggers
+  const navInbox = document.getElementById("nav-inbox");
+  if (navInbox) {
+    navInbox.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      const navLinks = document.querySelectorAll(".nav-links li");
+      navLinks.forEach(li => li.classList.remove("active"));
+      navInbox.parentElement.classList.add("active");
+      
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar && sidebar.classList.contains('open')) {
+        sidebar.classList.remove('open');
+      }
+    });
+  }
+
+  const navDigests = document.getElementById("nav-digests");
+  if (navDigests) {
+    navDigests.addEventListener("click", (e) => {
+      e.preventDefault();
+      const digestSection = document.getElementById("digest-section");
+      if (digestSection) {
+        digestSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        const navLinks = document.querySelectorAll(".nav-links li");
+        navLinks.forEach(li => li.classList.remove("active"));
+        navDigests.parentElement.classList.add("active");
+        
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar && sidebar.classList.contains('open')) {
+          sidebar.classList.remove('open');
+        }
+      }
+    });
+  }
+
+  const navArchive = document.getElementById("nav-archive");
+  if (navArchive) {
+    navArchive.addEventListener("click", (e) => {
+      e.preventDefault();
+      const olderSection = document.getElementById("older-newsletters-section");
+      if (olderSection) {
+        olderSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        const navLinks = document.querySelectorAll(".nav-links li");
+        navLinks.forEach(li => li.classList.remove("active"));
+        navArchive.parentElement.classList.add("active");
+        
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar && sidebar.classList.contains('open')) {
+          sidebar.classList.remove('open');
+        }
+      }
+    });
+  }
 
   const btnCloseSettings = document.getElementById("btn-close-settings");
   const btnCancelSettings = document.getElementById("btn-cancel-settings");
