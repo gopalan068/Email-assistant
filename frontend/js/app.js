@@ -553,7 +553,8 @@ function renderDigest(digestList) {
 
 // Open Detail Drawer
 function openEmailDetails(emailId) {
-  const rows = document.querySelectorAll('.ledger-row');
+  console.log("openEmailDetails called with emailId:", emailId);
+  const rows = document.querySelectorAll('.ledger-row, .gmail-row');
   rows.forEach(r => {
     if (r.getAttribute('data-id') == emailId) {
       r.classList.add('active');
@@ -611,7 +612,7 @@ document.addEventListener('keydown', (e) => {
 function closeDrawer() {
   drawer.classList.remove('open');
   document.body.classList.remove('drawer-open');
-  const rows = document.querySelectorAll('.ledger-row');
+  const rows = document.querySelectorAll('.ledger-row, .gmail-row');
   rows.forEach(r => r.classList.remove('active'));
   activeEmailId = null;
   if (typingTimer) clearInterval(typingTimer);
@@ -861,7 +862,7 @@ document.addEventListener('click', (e) => {
 
   if (drawer.classList.contains('open') &&
     !drawer.contains(e.target) &&
-    !e.target.closest('.ledger-row')) {
+    !e.target.closest('.ledger-row, .gmail-row')) {
     closeDrawer();
   }
 });
@@ -1067,7 +1068,9 @@ function renderOlderNewsletterRow(id, email, container) {
   const gmailRow = wrapper.querySelector('.gmail-row');
   if (gmailRow) {
     gmailRow.addEventListener('click', (e) => {
+      console.log("Older newsletter row clicked. ID:", id);
       if (e.target.closest('.gmail-col-action') || e.target.closest('.btn-row-briefing')) {
+        console.log("Click ignored: inside action/briefing button");
         return;
       }
       openEmailDetails(id);
