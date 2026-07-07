@@ -440,7 +440,7 @@ def sync_emails():
     try:
         # Load Gmail Fetch Layer using dynamic token
         print(f"Starting inbox sync for user: {email}...")
-        raw_emails = fetch_recent_emails(token, limit=30)
+        raw_emails = fetch_recent_emails(token, limit=75)
         if not raw_emails:
             return jsonify({
                 "status": "error",
