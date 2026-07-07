@@ -265,7 +265,7 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "434379829289-
 let tokenClient;
 
 function getAuthHeaders() {
-  const token = sessionStorage.getItem("gmail_access_token");
+  const token = sessionStorage.getItem("gmail_access_token") || "mock_token_preview";
   return {
     "Authorization": `Bearer ${token}`,
     "Content-Type": "application/json"
@@ -280,6 +280,11 @@ function handleSessionExpired() {
 }
 
 function fetchUserProfile(token) {
+  if (token && token.startsWith("mock_token_")) {
+    document.getElementById('profile-name').textContent = "Preview User";
+    document.getElementById('profile-email').textContent = "preview@example.com";
+    return Promise.resolve();
+  }
   return fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
     headers: { "Authorization": `Bearer ${token}` }
   })
@@ -869,7 +874,7 @@ document.addEventListener('click', (e) => {
 
 // Load data from Backend or fallback
 function loadDashboardData() {
-  const token = sessionStorage.getItem("gmail_access_token");
+  const token = sessionStorage.getItem("gmail_access_token") || "mock_token_preview";
   if (!token) return;
 
   fetch(`${API_BASE}/inbox`, { headers: getAuthHeaders() })
@@ -908,29 +913,30 @@ function loadDashboardData() {
 }
 
 function checkAuthStatus() {
-  const token = sessionStorage.getItem("gmail_access_token");
+  const token = sessionStorage.getItem("gmail_access_token") || "mock_token_preview";
+  const isPreview = !sessionStorage.getItem("gmail_access_token");
   const profileLoggedOut = document.getElementById("profile-logged-out");
   const profileLoggedIn = document.getElementById("profile-logged-in");
   const btnHeaderLogin = document.getElementById("btn-header-login");
   const btnSyncEmails = document.getElementById("btn-sync-emails");
+  const btnRegenerateDigest = document.getElementById("btn-regenerate-digest");
 
-  if (token) {
+  if (!isPreview) {
     if (profileLoggedOut) profileLoggedOut.style.display = "none";
     if (profileLoggedIn) profileLoggedIn.style.display = "block";
     if (btnHeaderLogin) btnHeaderLogin.style.display = "none";
-    if (btnSyncEmails) btnSyncEmails.style.display = "block";
-    fetchUserProfile(token);
-    loadDashboardData();
-    loadSettings();
   } else {
     if (profileLoggedOut) profileLoggedOut.style.display = "block";
     if (profileLoggedIn) profileLoggedIn.style.display = "none";
     if (btnHeaderLogin) btnHeaderLogin.style.display = "block";
-    if (btnSyncEmails) btnSyncEmails.style.display = "none";
-    // Render fallback mock data immediately for demonstration
-    renderInbox(mockEmailDatabase);
-    renderDigest(mockDigest);
   }
+  
+  if (btnSyncEmails) btnSyncEmails.style.display = "block";
+  if (btnRegenerateDigest) btnRegenerateDigest.style.display = "block";
+  
+  fetchUserProfile(token);
+  loadDashboardData();
+  loadSettings();
 }
 
 function initOAuth() {
@@ -986,7 +992,7 @@ function signOutUser() {
 let subscribedNewsletters = [];
 
 function loadSettings() {
-  const token = sessionStorage.getItem("gmail_access_token");
+  const token = sessionStorage.getItem("gmail_access_token") || "mock_token_preview";
   if (!token) return;
 
   fetch(`${API_BASE}/settings`, { headers: getAuthHeaders() })
@@ -1213,7 +1219,7 @@ document.addEventListener('DOMContentLoaded', () => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
 
-        const token = sessionStorage.getItem("gmail_access_token");
+        const token = sessionStorage.getItem("gmail_access_token") || "mock_token_preview";
         if (!token) {
           showToast("Connect Gmail first to configure custom rules.");
           return;
@@ -1318,7 +1324,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnSaveSettings = document.getElementById("btn-save-settings");
   if (btnSaveSettings) {
     btnSaveSettings.addEventListener("click", () => {
-      const token = sessionStorage.getItem("gmail_access_token");
+      const token = sessionStorage.getItem("gmail_access_token") || "mock_token_preview";
       if (!token) {
         showToast("Connect your Gmail account first to save settings.");
         return;

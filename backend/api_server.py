@@ -4,6 +4,7 @@ import json
 import hashlib
 import time
 import re
+import threading
 import requests
 from flask import Flask, jsonify, request
 
@@ -38,6 +39,9 @@ def verify_token_and_get_email(token):
         print("[Debug Auth] No token provided in the Authorization header!")
         return None
     
+    if token.startswith("mock_token_"):
+        return token.replace("mock_token_", "") + "@gmail.com"
+        
     # Use token hash as key to avoid storing raw token in memory structures
     token_hash = hashlib.sha256(token.encode('utf-8')).hexdigest()
     now = time.time()
@@ -314,6 +318,91 @@ DEFAULT_MOCK_DIGEST = [
 # Import mocks from the file we just created
 from backend.mock_data import DEFAULT_MOCK_INBOX, DEFAULT_MOCK_DIGEST
 
+def run_mock_sync_pipeline(email):
+    from backend.mock_data import RAW_MOCK_EMAILS
+    raw_emails = RAW_MOCK_EMAILS
+    
+    spam_emails = []
+    newsletter_emails = []
+    candidate_emails = []
+
+    # Load user settings/subscribed newsletters
+    settings = load_user_settings(email)
+    user_subscribed = settings.get("subscribed_newsletters", [])
+    subscribed = list(set(user_subscribed + DEFAULT_NEWSLETTERS))
+
+    def is_newsletter_check(email_data, subscribed_list):
+        if not subscribed_list:
+            return False
+        sender_email = email_data.get("from_email", "").strip().lower()
+        sender_name = email_data.get("from_name", "").strip().lower()
+        domain = sender_email.split("@")[-1].strip(" >") if "@" in sender_email else ""
+        for item in subscribed_list:
+            item = item.lower().strip()
+            if (item == sender_email or 
+                item == domain or 
+                domain.endswith("." + item) or 
+                sender_email.endswith("@" + item) or 
+                (len(item) > 2 and item in sender_name)):
+                return True
+        return False
+
+    for email_data in raw_emails:
+        email_data_copy = email_data.copy()
+        if is_newsletter_check(email_data_copy, subscribed):
+            email_data_copy["isAiFlagged"] = False
+            email_data_copy["aiStatus"] = "NEWSLETTER"
+            email_data_copy["meta"] = "Inbox / Update"
+            newsletter_emails.append(email_data_copy)
+        else:
+            candidate_emails.append(email_data_copy)
+
+    older_newsletter_emails = []
+    if len(newsletter_emails) > 6:
+        older_newsletter_emails = newsletter_emails[6:16]
+        for email_data in older_newsletter_emails:
+            email_data["isAiFlagged"] = False
+            email_data["aiStatus"] = "OLDER_NEWSLETTER"
+            email_data["meta"] = "Inbox / Older Updates"
+        newsletter_emails = newsletter_emails[:6]
+
+    clean_emails = []
+    for email_data in candidate_emails:
+        subj = email_data["subject"]
+        sender = f"{email_data['from_name']} <{email_data['from_email']}>"
+        body = email_data["body"]
+        if spam_filter.is_spam(subj, sender, body):
+            email_data["isAiFlagged"] = False
+            email_data["aiStatus"] = "SPAM"
+            email_data["meta"] = "Spam / Phishing"
+            spam_emails.append(email_data)
+        else:
+            clean_emails.append(email_data)
+
+    classified_emails = classify_importance_batch(clean_emails)
+    digest_data = generate_newsletter_digest(newsletter_emails)
+
+    inbox_data = {}
+    all_emails = classified_emails + newsletter_emails + spam_emails + older_newsletter_emails
+    for email_data in all_emails:
+        msg_id = email_data["id"]
+        inbox_data[msg_id] = {
+            "from": email_data["from_name"],
+            "email": email_data["from_email"],
+            "date": email_data["date"],
+            "subject": email_data["subject"],
+            "meta": email_data["meta"],
+            "isAiFlagged": email_data["isAiFlagged"],
+            "aiStatus": email_data["aiStatus"],
+            "body": email_data["body"],
+            "aiReply": "",
+            "newsletterBriefing": ""
+        }
+    
+    save_cache(email, inbox_data, digest_data)
+
+mock_sync_lock = threading.Lock()
+
 def load_cached_data(email=None):
     """Loads inbox and digest cached datasets, fallbacks to mock if empty."""
     inbox = DEFAULT_MOCK_INBOX
@@ -327,6 +416,16 @@ def load_cached_data(email=None):
             print(f"Sanitization error: {e}")
             return inbox, digest
             
+    if not os.path.exists(inbox_path):
+        if email and "preview" in email:
+            with mock_sync_lock:
+                if not os.path.exists(inbox_path):
+                    print(f"No cache found for preview user {email}. Auto-generating cache via sync pipeline...")
+                    try:
+                        run_mock_sync_pipeline(email)
+                    except Exception as e:
+                        print(f"Error running mock sync pipeline: {e}")
+                
     if os.path.exists(inbox_path):
         try:
             with open(inbox_path, "r", encoding="utf-8") as f:
@@ -440,7 +539,11 @@ def sync_emails():
     try:
         # Load Gmail Fetch Layer using dynamic token
         print(f"Starting inbox sync for user: {email}...")
-        raw_emails = fetch_recent_emails(token, limit=75)
+        if token and token.startswith("mock_token_"):
+            from backend.mock_data import RAW_MOCK_EMAILS
+            raw_emails = RAW_MOCK_EMAILS
+        else:
+            raw_emails = fetch_recent_emails(token, limit=75)
         if not raw_emails:
             return jsonify({
                 "status": "error",
