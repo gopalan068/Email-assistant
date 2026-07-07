@@ -283,17 +283,17 @@ function fetchUserProfile(token) {
   return fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
     headers: { "Authorization": `Bearer ${token}` }
   })
-  .then(res => {
-    if (!res.ok) throw new Error("Profile fetch failed");
-    return res.json();
-  })
-  .then(profile => {
-    document.getElementById('profile-name').textContent = profile.name || profile.given_name || "Gopal";
-    document.getElementById('profile-email').textContent = profile.email || profile.email;
-  })
-  .catch(err => {
-    console.warn("Could not load Google user profile info dynamically: ", err);
-  });
+    .then(res => {
+      if (!res.ok) throw new Error("Profile fetch failed");
+      return res.json();
+    })
+    .then(profile => {
+      document.getElementById('profile-name').textContent = profile.name || profile.given_name || "Gopal";
+      document.getElementById('profile-email').textContent = profile.email || profile.email;
+    })
+    .catch(err => {
+      console.warn("Could not load Google user profile info dynamically: ", err);
+    });
 }
 
 // DOM Selectors
@@ -363,6 +363,17 @@ function parseEmailDate(dateStr) {
   const cleaned = dateStr.replace(/\s*\(.*\)\s*/g, '');
   const parsed = Date.parse(cleaned);
   return isNaN(parsed) ? 0 : parsed;
+}
+
+// Helper to escape HTML characters to prevent rendering/layout issues
+function escapeHTML(str) {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 // Render Inbox Ledger
@@ -467,11 +478,11 @@ function renderInbox(data) {
     article.setAttribute('data-id', id);
     article.innerHTML = `
       <div class="row-meta">
-        <span class="row-from"><span class="row-initial">${initial}</span> ${email.from}</span>
+        <span class="row-from"><span class="row-initial">${initial}</span> ${escapeHTML(email.from)}</span>
         <time class="row-time">${formatDate(email.date)}</time>
       </div>
-      <h3 class="row-subject">${email.subject}</h3>
-      <p class="row-snippet">${email.body ? email.body.substring(0, 100).trim() + '...' : ''}</p>
+      <h3 class="row-subject">${escapeHTML(email.subject)}</h3>
+      <p class="row-snippet">${email.body ? escapeHTML(email.body.substring(0, 100).trim()) + '...' : ''}</p>
       <div class="row-footer">
         <span class="row-tag">${tag}</span>
         ${stampHtml}
@@ -693,7 +704,7 @@ btnSyncEmails.addEventListener('click', () => {
   syncTimeText.innerText = "Syncing logs...";
   ledgerGridContainer.classList.add('shimmer-active');
 
-  fetch(`${API_BASE}/sync`, { 
+  fetch(`${API_BASE}/sync`, {
     method: "POST",
     headers: getAuthHeaders()
   })
@@ -843,8 +854,8 @@ if (btnToggleSidebar) {
 // Close drawer or sidebar when clicking outside
 document.addEventListener('click', (e) => {
   if (sidebar && sidebar.classList.contains('open') &&
-      !sidebar.contains(e.target) &&
-      (btnToggleSidebar && !btnToggleSidebar.contains(e.target))) {
+    !sidebar.contains(e.target) &&
+    (btnToggleSidebar && !btnToggleSidebar.contains(e.target))) {
     sidebar.classList.remove('open');
   }
 
@@ -901,7 +912,7 @@ function checkAuthStatus() {
   const profileLoggedIn = document.getElementById("profile-logged-in");
   const btnHeaderLogin = document.getElementById("btn-header-login");
   const btnSyncEmails = document.getElementById("btn-sync-emails");
-  
+
   if (token) {
     if (profileLoggedOut) profileLoggedOut.style.display = "none";
     if (profileLoggedIn) profileLoggedIn.style.display = "block";
@@ -927,9 +938,8 @@ function initOAuth() {
     setTimeout(initOAuth, 500);
     return;
   }
-  
-  console.log("Initializing Google OAuth with Client ID:", GOOGLE_CLIENT_ID);
-  
+
+
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: GOOGLE_CLIENT_ID,
     scope: 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
@@ -939,14 +949,14 @@ function initOAuth() {
         showToast("Authentication failed. Please try again.");
         return;
       }
-      
+
       if (response.access_token) {
         sessionStorage.setItem("gmail_access_token", response.access_token);
-        
+
         // Hide banners and update displays
         document.getElementById('session-expired-banner').style.display = 'none';
         document.body.classList.remove('banner-active');
-        
+
         checkAuthStatus();
         showToast("Logged in successfully.");
       }
@@ -977,7 +987,7 @@ let subscribedNewsletters = [];
 function loadSettings() {
   const token = sessionStorage.getItem("gmail_access_token");
   if (!token) return;
-  
+
   fetch(`${API_BASE}/settings`, { headers: getAuthHeaders() })
     .then(res => {
       if (res.status === 401) {
@@ -999,20 +1009,20 @@ function loadSettings() {
 function renderSettingsTags() {
   const listEl = document.getElementById("settings-newsletter-list");
   if (!listEl) return;
-  
+
   listEl.innerHTML = "";
   if (subscribedNewsletters.length === 0) {
     listEl.innerHTML = '<span style="font-style: italic; opacity: 0.5; font-size: 12px; margin: auto;">No custom newsletter whitelist configured. Falling back to heuristics.</span>';
     return;
   }
-  
+
   subscribedNewsletters.forEach((item, index) => {
     const tag = document.createElement("div");
     tag.className = "newsletter-tag";
     tag.innerHTML = `<span>${item}</span><span class="remove-tag" data-index="${index}">&times;</span>`;
     listEl.appendChild(tag);
   });
-  
+
   // Wire up remove handlers
   listEl.querySelectorAll(".remove-tag").forEach(btn => {
     btn.addEventListener("click", (e) => {
@@ -1026,18 +1036,18 @@ function renderSettingsTags() {
 function renderOlderNewsletterRow(id, email, container) {
   const wrapper = document.createElement('div');
   wrapper.className = 'gmail-row-wrapper';
-  
-  const snippet = email.body ? email.body.substring(0, 80).trim() + '...' : '';
+
+  const snippet = email.body ? escapeHTML(email.body.substring(0, 80).trim()) + '...' : '';
   const dateFormatted = formatDate(email.date);
-  
+
   const briefText = email.newsletterBriefing || '';
   const displayBriefing = briefText ? 'block' : 'none';
-  
+
   wrapper.innerHTML = `
     <div class="gmail-row" data-id="${id}">
-      <div class="gmail-col-from">${email.from}</div>
+      <div class="gmail-col-from">${escapeHTML(email.from)}</div>
       <div class="gmail-col-subject-wrapper">
-        <span class="gmail-subject">${email.subject}</span>
+        <span class="gmail-subject">${escapeHTML(email.subject)}</span>
         <span class="gmail-sep"> — </span>
         <span class="gmail-snippet">${snippet}</span>
       </div>
@@ -1050,20 +1060,20 @@ function renderOlderNewsletterRow(id, email, container) {
     </div>
     <div class="row-briefing-box" id="briefing-box-${id}" style="display: ${displayBriefing};">
       <div class="briefing-header">AI Briefing Summary</div>
-      <div class="briefing-text" id="briefing-text-${id}">${briefText}</div>
+      <div class="briefing-text" id="briefing-text-${id}">${escapeHTML(briefText)}</div>
     </div>
   `;
-  
-  wrapper.querySelector('.gmail-col-from').addEventListener('click', (e) => {
-    openEmailDetails(id);
-  });
-  wrapper.querySelector('.gmail-col-subject-wrapper').addEventListener('click', (e) => {
-    openEmailDetails(id);
-  });
-  wrapper.querySelector('.gmail-col-date').addEventListener('click', (e) => {
-    openEmailDetails(id);
-  });
-  
+
+  const gmailRow = wrapper.querySelector('.gmail-row');
+  if (gmailRow) {
+    gmailRow.addEventListener('click', (e) => {
+      if (e.target.closest('.gmail-col-action') || e.target.closest('.btn-row-briefing')) {
+        return;
+      }
+      openEmailDetails(id);
+    });
+  }
+
   const btnBrief = wrapper.querySelector('.btn-row-briefing');
   if (btnBrief) {
     btnBrief.addEventListener('click', (e) => {
@@ -1071,29 +1081,29 @@ function renderOlderNewsletterRow(id, email, container) {
       generateOlderNewsletterBriefing(id);
     });
   }
-  
+
   container.appendChild(wrapper);
 }
 
 function generateOlderNewsletterBriefing(id) {
   const token = sessionStorage.getItem("gmail_access_token");
-  
+
   const box = document.getElementById(`briefing-box-${id}`);
   const textEl = document.getElementById(`briefing-text-${id}`);
   const btn = document.querySelector(`.btn-row-briefing[data-id="${id}"]`);
-  
+
   if (box && textEl && btn) {
     box.style.display = 'block';
     textEl.innerHTML = '<span style="font-style:italic; opacity:0.5;"><i class="fas fa-spinner fa-spin"></i> Compiling brief...</span>';
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Working...';
-    
+
     // If not logged in, simulate typing of fallback mockup briefing
     if (!token) {
       setTimeout(() => {
         const mockSummary = "This newsletter contains industry updates on browser technology developments. It details performance acceleration, driver implementations, and core rendering enhancements.";
         emailDatabase[id].newsletterBriefing = mockSummary;
-        
+
         textEl.textContent = '';
         let index = 0;
         let typedBrief = '';
@@ -1112,7 +1122,7 @@ function generateOlderNewsletterBriefing(id) {
       }, 1000);
       return;
     }
-    
+
     fetch(`${API_BASE}/brief-newsletter`, {
       method: "POST",
       headers: getAuthHeaders(),
@@ -1130,7 +1140,7 @@ function generateOlderNewsletterBriefing(id) {
         if (data.status === "success") {
           const summary = data.briefing;
           emailDatabase[id].newsletterBriefing = summary;
-          
+
           textEl.textContent = '';
           let index = 0;
           let typedBrief = '';
@@ -1163,7 +1173,7 @@ function generateOlderNewsletterBriefing(id) {
 document.addEventListener('DOMContentLoaded', () => {
   initOAuth();
   checkAuthStatus();
-  
+
   const handleLoginClick = () => {
     if (tokenClient) {
       tokenClient.requestAccessToken();
@@ -1171,22 +1181,22 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast("Google OAuth library is still loading. Please wait a moment.");
     }
   };
-  
+
   const btnSidebarLogin = document.getElementById('btn-sidebar-login');
   if (btnSidebarLogin) {
     btnSidebarLogin.addEventListener('click', handleLoginClick);
   }
-  
+
   const btnHeaderLogin = document.getElementById('btn-header-login');
   if (btnHeaderLogin) {
     btnHeaderLogin.addEventListener('click', handleLoginClick);
   }
-  
+
   const btnBannerReauth = document.getElementById('btn-banner-reauth');
   if (btnBannerReauth) {
     btnBannerReauth.addEventListener('click', handleLoginClick);
   }
-  
+
   const btnLogout = document.getElementById('btn-logout');
   if (btnLogout) {
     btnLogout.addEventListener('click', signOutUser);
@@ -1199,13 +1209,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (text.includes("settings") || text.includes("ai rules")) {
       link.addEventListener("click", (e) => {
         e.preventDefault();
-        
+
         const token = sessionStorage.getItem("gmail_access_token");
         if (!token) {
           showToast("Connect Gmail first to configure custom rules.");
           return;
         }
-        
+
         document.getElementById("settings-modal").style.display = "flex";
         loadSettings();
       });
@@ -1221,7 +1231,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const navLinks = document.querySelectorAll(".nav-links li");
       navLinks.forEach(li => li.classList.remove("active"));
       navInbox.parentElement.classList.add("active");
-      
+
       const sidebar = document.querySelector('.sidebar');
       if (sidebar && sidebar.classList.contains('open')) {
         sidebar.classList.remove('open');
@@ -1239,7 +1249,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const navLinks = document.querySelectorAll(".nav-links li");
         navLinks.forEach(li => li.classList.remove("active"));
         navDigests.parentElement.classList.add("active");
-        
+
         const sidebar = document.querySelector('.sidebar');
         if (sidebar && sidebar.classList.contains('open')) {
           sidebar.classList.remove('open');
@@ -1258,7 +1268,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const navLinks = document.querySelectorAll(".nav-links li");
         navLinks.forEach(li => li.classList.remove("active"));
         navArchive.parentElement.classList.add("active");
-        
+
         const sidebar = document.querySelector('.sidebar');
         if (sidebar && sidebar.classList.contains('open')) {
           sidebar.classList.remove('open');
@@ -1270,7 +1280,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCloseSettings = document.getElementById("btn-close-settings");
   const btnCancelSettings = document.getElementById("btn-cancel-settings");
   const modalOverlay = document.getElementById("settings-modal");
-  
+
   if (btnCloseSettings) btnCloseSettings.addEventListener("click", () => modalOverlay.style.display = "none");
   if (btnCancelSettings) btnCancelSettings.addEventListener("click", () => modalOverlay.style.display = "none");
   if (modalOverlay) {
@@ -1293,7 +1303,7 @@ document.addEventListener('DOMContentLoaded', () => {
         inputNewNewsletter.value = "";
       }
     });
-    
+
     inputNewNewsletter.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         btnAddNewsletter.click();
@@ -1310,34 +1320,34 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast("Connect your Gmail account first to save settings.");
         return;
       }
-      
+
       btnSaveSettings.innerText = "Saving...";
       btnSaveSettings.disabled = true;
-      
+
       fetch(`${API_BASE}/settings`, {
         method: "POST",
         headers: getAuthHeaders(),
         body: JSON.stringify({ subscribed_newsletters: subscribedNewsletters })
       })
-      .then(res => {
-        if (res.status === 401) {
-          handleSessionExpired();
-          throw new Error("Session expired");
-        }
-        if (!res.ok) throw new Error("Save settings failed");
-        return res.json();
-      })
-      .then(data => {
-        showToast("Newsletter rules saved successfully.");
-        modalOverlay.style.display = "none";
-      })
-      .catch(err => {
-        showToast(err.message || "Failed to save settings.");
-      })
-      .finally(() => {
-        btnSaveSettings.innerText = "Save Settings";
-        btnSaveSettings.disabled = false;
-      });
+        .then(res => {
+          if (res.status === 401) {
+            handleSessionExpired();
+            throw new Error("Session expired");
+          }
+          if (!res.ok) throw new Error("Save settings failed");
+          return res.json();
+        })
+        .then(data => {
+          showToast("Newsletter rules saved successfully.");
+          modalOverlay.style.display = "none";
+        })
+        .catch(err => {
+          showToast(err.message || "Failed to save settings.");
+        })
+        .finally(() => {
+          btnSaveSettings.innerText = "Save Settings";
+          btnSaveSettings.disabled = false;
+        });
     });
   }
 });

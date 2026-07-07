@@ -172,7 +172,7 @@ def extract_parts_body(parts):
         return soup.get_text(separator='\n')
     return ""
 
-def fetch_recent_emails(access_token, limit=30):
+def fetch_recent_emails(access_token, limit=60):
     """Fetches list of recent emails from Gmail using a dynamic access token, returning clean intermediate data."""
     try:
         service = get_gmail_service_for_token(access_token)
