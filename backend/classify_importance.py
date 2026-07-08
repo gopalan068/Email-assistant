@@ -201,7 +201,9 @@ def extract_signals(email):
     urgent_keywords = [
         "urgent", "immediate", "action required", "critical", "important",
         "asap", "due today", "reminder", "last date", "expiring",
-        "verification required", "confirm your",
+        "verification required", "confirm your", "declined", "decline",
+        "failed", "failure", "cancelled", "cancel", "suspended", "suspension",
+        "overdue", "unpaid", "bounced",
     ]
     has_urgent_keywords = any(
         has_whole_word(subject, k) or has_whole_word(body, k) for k in urgent_keywords
@@ -601,7 +603,9 @@ def classify_importance_batch(emails):
         # Rule F: Urgent keyword in subject → needs attention
         urgent_subject_patterns = [
             "urgent", "action required", "verify", "confirm", "important",
-            "reminder", "due", "expires", "last chance",
+            "reminder", "due", "expires", "last chance", "declined", "decline",
+            "failed", "failure", "cancelled", "cancel", "suspended", "suspension",
+            "overdue", "unpaid", "bounced",
         ]
         if any(pat in subject_lower for pat in urgent_subject_patterns):
             reason = "Fast Heuristic: Urgency keyword detected in email subject."
@@ -677,6 +681,7 @@ def classify_importance_batch(emails):
         "- Mark 'important' if the email needs the user's direct attention, action, or reply.\n"
         "- otp and security are ALWAYS important.\n"
         "- career emails (interviews, offers) are ALWAYS important.\n"
+        "- finance emails like payment declines, payment failures, subscription cancellations, or bill dues are ALWAYS important because they require immediate user action.\n"
         "- orders are usually 'regular' (informational); mark important only if action is needed (e.g. failed delivery).\n"
         "- When in doubt, lean toward 'important'.\n\n"
         "  3. 'reason': one concise sentence explaining your classification.\n\n"

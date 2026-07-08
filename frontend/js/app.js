@@ -528,6 +528,21 @@ function renderDigest(digestList) {
     countEl.innerText = `[${digestList ? digestList.length : 0}]`;
   }
 
+  // Update Morning Digest date header dynamically
+  const dateEl = document.querySelector('.digest-date');
+  if (dateEl) {
+    const today = new Date();
+    const options = { weekday: 'long', month: 'long', day: 'numeric' };
+    dateEl.innerText = `— ${today.toLocaleDateString('en-US', options)}`;
+  }
+
+  // Update source briefs count dynamically
+  const statSources = document.getElementById('digest-stat-sources');
+  if (statSources) {
+    const count = digestList ? digestList.length : 0;
+    statSources.innerText = `${count} Source Brief${count !== 1 ? 's' : ''}`;
+  }
+
   if (!digestList || digestList.length === 0) {
     digestGrid.innerHTML = `
       <div style="grid-column: 1 / -1; text-align: center; color: rgba(32, 38, 31, 0.5); font-style: italic; padding: 24px 0;">
@@ -744,32 +759,34 @@ btnSyncEmails.addEventListener('click', () => {
 });
 
 // Regenerate Digest
-btnRegenerateDigest.addEventListener('click', () => {
-  btnRegenerateDigest.innerText = "Summarizing...";
-  btnRegenerateDigest.disabled = true;
+if (btnRegenerateDigest) {
+  btnRegenerateDigest.addEventListener('click', () => {
+    btnRegenerateDigest.innerText = "Summarizing...";
+    btnRegenerateDigest.disabled = true;
 
-  fetch(`${API_BASE}/digest`, { headers: getAuthHeaders() })
-    .then(res => {
-      if (res.status === 401) {
-        handleSessionExpired();
-        throw new Error("Session expired");
-      }
-      if (!res.ok) throw new Error("HTTP error");
-      return res.json();
-    })
-    .then(data => {
-      btnRegenerateDigest.innerText = "Regenerate Briefing";
-      btnRegenerateDigest.disabled = false;
-      renderDigest(data);
-      showToast("Morning briefing re-compiled.");
-    })
-    .catch(err => {
-      console.error("Digest generation failed: ", err);
-      btnRegenerateDigest.innerText = "Regenerate Briefing";
-      btnRegenerateDigest.disabled = false;
-      showToast("Error connecting to server.");
-    });
-});
+    fetch(`${API_BASE}/digest`, { headers: getAuthHeaders() })
+      .then(res => {
+        if (res.status === 401) {
+          handleSessionExpired();
+          throw new Error("Session expired");
+        }
+        if (!res.ok) throw new Error("HTTP error");
+        return res.json();
+      })
+      .then(data => {
+        btnRegenerateDigest.innerText = "Regenerate Briefing";
+        btnRegenerateDigest.disabled = false;
+        renderDigest(data);
+        showToast("Morning briefing re-compiled.");
+      })
+      .catch(err => {
+        console.error("Digest generation failed: ", err);
+        btnRegenerateDigest.innerText = "Regenerate Briefing";
+        btnRegenerateDigest.disabled = false;
+        showToast("Error connecting to server.");
+      });
+  });
+}
 
 // Live Search Filter — covers all 7 columns
 searchInput.addEventListener('input', (e) => {
