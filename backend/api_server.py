@@ -29,7 +29,9 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-GOOGLE_CLIENT_ID = os.environ["GOOGLE_CLIENT_ID"]  # Must be set — fail loudly on startup if missing
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+if not GOOGLE_CLIENT_ID:
+    raise ValueError("GOOGLE_CLIENT_ID environment variable is not set. Please set it in your .env file.")
 
 # Token Cache structure: { hash: (email, cache_expiry) }
 token_verif_cache = {}

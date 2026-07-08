@@ -261,7 +261,10 @@ const mockDigest = [
 
 let emailDatabase = {};
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000/api";
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "434379829289-593k64codcrpeeuqtenkl1gmp6sqjo0l.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+if (!GOOGLE_CLIENT_ID) {
+  console.error("VITE_GOOGLE_CLIENT_ID not set");
+}
 let tokenClient;
 
 function getAuthHeaders() {
@@ -310,7 +313,6 @@ const btnSyncEmails = document.getElementById('btn-sync-emails');
 const syncTimeText = document.getElementById('sync-time-text');
 const syncIcon = document.getElementById('sync-icon');
 const ledgerGridContainer = document.getElementById('ledger-grid-container');
-const btnRegenerateDigest = document.getElementById('btn-regenerate-digest');
 
 // Drawer Elements
 const dMeta = document.getElementById('drawer-email-meta');
@@ -758,36 +760,6 @@ btnSyncEmails.addEventListener('click', () => {
     });
 });
 
-// Regenerate Digest
-if (btnRegenerateDigest) {
-  btnRegenerateDigest.addEventListener('click', () => {
-    btnRegenerateDigest.innerText = "Summarizing...";
-    btnRegenerateDigest.disabled = true;
-
-    fetch(`${API_BASE}/digest`, { headers: getAuthHeaders() })
-      .then(res => {
-        if (res.status === 401) {
-          handleSessionExpired();
-          throw new Error("Session expired");
-        }
-        if (!res.ok) throw new Error("HTTP error");
-        return res.json();
-      })
-      .then(data => {
-        btnRegenerateDigest.innerText = "Regenerate Briefing";
-        btnRegenerateDigest.disabled = false;
-        renderDigest(data);
-        showToast("Morning briefing re-compiled.");
-      })
-      .catch(err => {
-        console.error("Digest generation failed: ", err);
-        btnRegenerateDigest.innerText = "Regenerate Briefing";
-        btnRegenerateDigest.disabled = false;
-        showToast("Error connecting to server.");
-      });
-  });
-}
-
 // Live Search Filter — covers all 7 columns
 searchInput.addEventListener('input', (e) => {
   const query = e.target.value.toLowerCase().trim();
@@ -936,7 +908,6 @@ function checkAuthStatus() {
   const profileLoggedIn = document.getElementById("profile-logged-in");
   const btnHeaderLogin = document.getElementById("btn-header-login");
   const btnSyncEmails = document.getElementById("btn-sync-emails");
-  const btnRegenerateDigest = document.getElementById("btn-regenerate-digest");
 
   if (!isPreview) {
     if (profileLoggedOut) profileLoggedOut.style.display = "none";
@@ -949,7 +920,6 @@ function checkAuthStatus() {
   }
   
   if (btnSyncEmails) btnSyncEmails.style.display = "block";
-  if (btnRegenerateDigest) btnRegenerateDigest.style.display = "block";
   
   fetchUserProfile(token);
   loadDashboardData();

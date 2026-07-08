@@ -80,9 +80,15 @@ class SpamFilter:
         # Exact match against known trusted domains
         if any(domain == td or domain.endswith("." + td) for td in TRUSTED_DOMAINS):
             return True
-        # Pattern match for institutional domains (e.g. anything containing "bank", "gov.in")
-        if any(pattern in domain for pattern in TRUSTED_DOMAIN_PATTERNS):
-            return True
+        # Pattern match for institutional domains (ensuring full-word boundary matches to avoid false positives like 'w3schools')
+        for pattern in TRUSTED_DOMAIN_PATTERNS:
+            if "." in pattern or pattern in ["edu", "gov"]:
+                if domain.endswith(pattern) or domain.endswith("." + pattern):
+                    return True
+            else:
+                parts = domain.replace("-", ".").split(".")
+                if any(part == pattern for part in parts):
+                    return True
         return False
 
     def is_spam(self, subject: str, sender: str, body: str) -> bool:

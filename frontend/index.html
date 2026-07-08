@@ -52,8 +52,11 @@
         </div>
         <div id="profile-logged-in" style="display: none;">
           <span class="account-name" id="profile-name">Gopal</span>
-          <div id="profile-email" style="font-size: 11px; opacity: 0.6; font-family: 'IBM Plex Mono', monospace; word-break: break-all; margin-bottom: 8px;">gopalan0555@gmail.com</div>
-          <button class="btn-logout" id="btn-logout" title="Sign Out"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+          <div id="profile-email"
+            style="font-size: 11px; opacity: 0.6; font-family: 'IBM Plex Mono', monospace; word-break: break-all; margin-bottom: 8px;">
+            gopalan0555@gmail.com</div>
+          <button class="btn-logout" id="btn-logout" title="Sign Out"><i class="fas fa-sign-out-alt"></i> Sign
+            Out</button>
         </div>
       </div>
     </div>
@@ -72,7 +75,7 @@
       <div class="header-utilities">
         <button class="btn-sync" id="btn-sync-emails" style="display: none;">
           <i class="fas fa-sync-alt" id="sync-icon"></i>
-          <span id="sync-time-text">Synced 2m ago</span>
+          <span id="sync-time-text">Synced few mins ago</span>
         </button>
         <button class="btn-connect-gmail-header" id="btn-header-login">
           <i class="fab fa-google"></i>
@@ -380,7 +383,8 @@
           <div class="header-col-action" style="text-align: right; padding-right: 16px;">AI Action</div>
         </div>
         <div class="gmail-rows" id="rows-older-newsletters">
-          <p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No older newsletters found.</p>
+          <p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No
+            older newsletters found.</p>
         </div>
       </div>
     </section>
@@ -438,12 +442,13 @@
       </div>
       <div class="modal-body">
         <h3>Subscribed Newsletters Whitelist</h3>
-        <p class="modal-help-text">Only emails from these senders or domains will be classified as newsletters and compiled in your digests. Leave empty to fallback to automatic smart heuristics.</p>
-        
+        <p class="modal-help-text">Only emails from these senders or domains will be classified as newsletters and
+          compiled in your digests. Leave empty to fallback to automatic smart heuristics.</p>
+
         <div class="newsletter-list" id="settings-newsletter-list">
           <!-- Dynamically populated tags -->
         </div>
-        
+
         <div class="modal-input-row">
           <input type="text" id="input-new-newsletter" placeholder="e.g. tldr.tech, news@domain.com" autocomplete="off">
           <button class="btn-action" id="btn-add-newsletter">Add</button>
