@@ -1,5 +1,8 @@
 import os
+import re
 import joblib
+import numpy as np
+import scipy.sparse as sp
 
 # ---------------------------------------------------------------------------
 # TRUSTED SENDER WHITELIST
@@ -34,6 +37,42 @@ TRUSTED_DOMAIN_PATTERNS = [
     "school", "college", "insurance", "mutual", "finance",
 ]
 
+# ---------------------------------------------------------------------------
+# Feature engineering helpers (must mirror train_spam_classifier.py exactly)
+# ---------------------------------------------------------------------------
+_URL_RE = re.compile(r"https?://\S+|www\.\S+", re.IGNORECASE)
+
+def _count_urls(text: str) -> int:
+    return len(_URL_RE.findall(text))
+
+def _uppercase_ratio(text: str) -> float:
+    letters = [c for c in text if c.isalpha()]
+    if not letters:
+        return 0.0
+    return sum(1 for c in letters if c.isupper()) / len(letters)
+
+def _special_char_count(text: str) -> int:
+    return sum(text.count(c) for c in "!$?#")
+
+def _is_reply(subject: str) -> int:
+    s = (subject or "").strip().lower()
+    return 1 if s.startswith(("re:", "re :", "fwd:", "fw:")) else 0
+
+def _has_unsubscribe(text: str) -> int:
+    t = text.lower()
+    return 1 if ("unsubscribe" in t or "opt-out" in t or "opt out" in t) else 0
+
+def _build_extra_features(subject: str, body: str) -> np.ndarray:
+    """Build the same 5-feature numeric vector used during training."""
+    return np.array([[  
+        _count_urls(body),
+        _uppercase_ratio(subject),
+        _special_char_count(body),
+        _is_reply(subject),
+        _has_unsubscribe(body),
+    ]], dtype=np.float32)
+
+
 class SpamFilter:
     def __init__(self, model_path=None):
         if model_path is None:
@@ -43,6 +82,7 @@ class SpamFilter:
         self.model_path = os.path.abspath(model_path)
         self.model = None
         self.vectorizer = None
+        self.has_extra_features = False
         # Probability threshold: model must be ≥80% confident to call it spam.
         # This dramatically reduces false positives on transactional emails.
         self.spam_threshold = 0.80
@@ -56,7 +96,10 @@ class SpamFilter:
             data = joblib.load(self.model_path)
             self.model = data["model"]
             self.vectorizer = data["vectorizer"]
-            print(f"Loaded spam classifier model from {self.model_path}")
+            # New models include engineered features; old models do not
+            self.has_extra_features = data.get("has_extra_features", False)
+            print(f"Loaded spam classifier model from {self.model_path} "
+                  f"(extra_features={self.has_extra_features})")
         except Exception as e:
             print(f"Error loading spam classifier: {e}")
 
@@ -124,6 +167,7 @@ class SpamFilter:
             "lottery.xyz", "winbiglottery.xyz", "cheapmeds-discount.net",
             "scam-pharmacy.net", "winbig.lottery", "phishing-link.com",
             "suspicious-link-to-steal-your-identity.xyz",
+            "discover.pinterest.com",
         ]
         if any(dom in sender_lower for dom in spam_domains):
             print(f"[Spam Heuristic] Blocked sender from blocklisted domain: {sender}")
@@ -146,7 +190,15 @@ class SpamFilter:
 
         text = f"Subject: {subject}\n\n{body}"
         try:
-            vec = self.vectorizer.transform([text])
+            tfidf_vec = self.vectorizer.transform([text])
+
+            if self.has_extra_features:
+                # Append the 5 engineered numeric features (same as training)
+                extra = _build_extra_features(subject, body)
+                vec = sp.hstack([tfidf_vec, sp.csr_matrix(extra)], format="csr")
+            else:
+                vec = tfidf_vec
+
             # Use probability instead of hard prediction to control false positives
             spam_prob = self.model.predict_proba(vec)[0][1]
             is_spam_result = spam_prob >= self.spam_threshold

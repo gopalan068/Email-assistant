@@ -6,7 +6,11 @@ backend/token*.json
 backend/inbox_cache*.json
 backend/digest_cache*.json
 backend/__pycache__/
+__pycache__/
 *.pyc
 .vercel/
 dist/
 dump_env_helper.py
+
+# SpamAssassin corpus cache (auto-downloaded during retraining, not needed in repo)
+models/_sa_cache/
