@@ -513,6 +513,27 @@ function renderInbox(data) {
     colSpam.appendChild(summary);
   }
 
+  if (colImportant.children.length === 0) {
+    colImportant.innerHTML = '<p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No important emails.</p>';
+  }
+  if (colRegular.children.length === 0) {
+    colRegular.innerHTML = '<p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No regular emails.</p>';
+  }
+  if (colSpam.children.length === 0) {
+    colSpam.innerHTML = '<p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No spam emails.</p>';
+  }
+  if (colSecurity && colSecurity.children.length === 0) {
+    colSecurity.innerHTML = '<p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No security alerts. All accounts appear safe.</p>';
+  }
+  if (colOtp && colOtp.children.length === 0) {
+    colOtp.innerHTML = '<p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No OTP or verification codes found.</p>';
+  }
+  if (colCareer && colCareer.children.length === 0) {
+    colCareer.innerHTML = '<p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No job alerts or career updates.</p>';
+  }
+  if (colOrders && colOrders.children.length === 0) {
+    colOrders.innerHTML = '<p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No order updates or shipping emails.</p>';
+  }
   if (olderCount === 0 && colOlderNewsletters) {
     colOlderNewsletters.innerHTML = '<p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No older newsletters found.</p>';
   }

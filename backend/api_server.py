@@ -252,9 +252,9 @@ def run_mock_sync_pipeline(email):
 mock_sync_lock = threading.Lock()
 
 def load_cached_data(email=None):
-    """Loads inbox and digest cached datasets, fallbacks to mock if empty."""
-    inbox = DEFAULT_MOCK_INBOX
-    digest = DEFAULT_MOCK_DIGEST
+    """Loads inbox and digest cached datasets, returning empty sets if no cache exists."""
+    inbox = {}
+    digest = []
     
     inbox_path, digest_path = inbox_cache_path, digest_cache_path
     if email:
@@ -262,18 +262,8 @@ def load_cached_data(email=None):
             inbox_path, digest_path = get_user_cache_paths(email)
         except Exception as e:
             print(f"Sanitization error: {e}")
-            return inbox, digest
+            return {}, []
             
-    if not os.path.exists(inbox_path):
-        if email and "preview" in email:
-            with mock_sync_lock:
-                if not os.path.exists(inbox_path):
-                    print(f"No cache found for preview user {email}. Auto-generating cache via sync pipeline...")
-                    try:
-                        run_mock_sync_pipeline(email)
-                    except Exception as e:
-                        print(f"Error running mock sync pipeline: {e}")
-                
     if os.path.exists(inbox_path):
         try:
             with open(inbox_path, "r", encoding="utf-8") as f:
