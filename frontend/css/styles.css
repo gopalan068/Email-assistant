@@ -293,6 +293,103 @@ body {
   pointer-events: none;
 }
 
+/* ── Inbox Empty State ─────────────────────────────────────────────────── */
+.inbox-empty-state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 32px;
+  border: 1.5px dashed var(--color-hairline);
+  margin-bottom: 48px;
+}
+
+.inbox-empty-state.visible {
+  display: flex;
+}
+
+.empty-state-glyph {
+  font-family: 'Fraunces', serif;
+  font-size: 64px;
+  font-weight: 300;
+  color: var(--color-hairline);
+  line-height: 1;
+  margin-bottom: 24px;
+  letter-spacing: -2px;
+}
+
+.empty-state-headline {
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--color-ink);
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+
+.empty-state-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--color-ink);
+  opacity: 0.5;
+  max-width: 360px;
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.empty-state-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.empty-state-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: var(--color-pine);
+  color: var(--color-paper);
+  border: 1.5px solid var(--color-pine);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.empty-state-btn-primary:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.empty-state-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: transparent;
+  color: var(--color-ink);
+  border: 1.5px solid var(--color-hairline);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.empty-state-btn-secondary:hover {
+  border-color: var(--color-pine);
+  color: var(--color-pine);
+  transform: translateY(-1px);
+}
+
 /* Ledger Grid */
 .ledger-grid {
   display: grid;

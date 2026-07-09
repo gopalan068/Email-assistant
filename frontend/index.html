@@ -75,7 +75,7 @@
       <div class="header-utilities">
         <button class="btn-sync" id="btn-sync-emails" style="display: none;">
           <i class="fas fa-sync-alt" id="sync-icon"></i>
-          <span id="sync-time-text">Synced few mins ago</span>
+          <span id="sync-time-text">Sync now</span>
         </button>
         <button class="btn-connect-gmail-header" id="btn-header-login">
           <i class="fab fa-google"></i>
@@ -91,6 +91,21 @@
       <span class="search-shortcut">Ctrl + K</span>
     </div>
 
+    <!-- ── Empty State: shown before any sync ─────────────────────────────── -->
+    <div class="inbox-empty-state" id="inbox-empty-state">
+      <div class="empty-state-glyph">0</div>
+      <h2 class="empty-state-headline">No emails found.</h2>
+      <p class="empty-state-sub">Connect your Gmail account or run a sync to populate your inbox.</p>
+      <div class="empty-state-actions">
+        <button class="empty-state-btn-primary" id="empty-state-btn-sync">
+          <i class="fas fa-sync-alt"></i> Sync Inbox
+        </button>
+        <button class="empty-state-btn-secondary" id="empty-state-btn-connect">
+          <i class="fab fa-google"></i> Connect Gmail
+        </button>
+      </div>
+    </div>
+
     <!-- Ledger Columns Grid -->
     <div class="ledger-grid" id="ledger-grid-container">
 
@@ -101,7 +116,8 @@
           <span class="column-count" id="count-important">[00]</span>
         </h2>
         <div class="ledger-rows">
-          <p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No important emails.</p>
+          <p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No
+            important emails.</p>
         </div>
       </section>
 
@@ -112,7 +128,8 @@
           <span class="column-count" id="count-regular">[00]</span>
         </h2>
         <div class="ledger-rows">
-          <p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No regular emails.</p>
+          <p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No
+            regular emails.</p>
         </div>
       </section>
 
@@ -123,7 +140,8 @@
           <span class="column-count" id="count-spam">[00]</span>
         </h2>
         <div class="ledger-rows">
-          <p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No spam emails.</p>
+          <p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6;">No
+            spam emails.</p>
         </div>
       </section>
 
@@ -193,7 +211,9 @@
         </div>
       </div>
       <div class="digest-ledger-grid">
-        <p class="empty-column-hint" style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6; grid-column: 1 / -1;">No newsletter briefs generated. Sync inbox to fetch recent newsletters.</p>
+        <p class="empty-column-hint"
+          style="text-align: center; padding: 24px; font-style: italic; opacity: 0.6; grid-column: 1 / -1;">No
+          newsletter briefs generated. Sync inbox to fetch recent newsletters.</p>
       </div>
       <div class="digest-footer">
         <span class="digest-verification"><i class="fas fa-check-circle" style="color:var(--color-pine)"></i>

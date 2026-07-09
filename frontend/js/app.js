@@ -383,6 +383,30 @@ function escapeHTML(str) {
     .replace(/'/g, '&#039;');
 }
 
+// Show or hide the empty state panel and ledger columns
+function updateEmptyState() {
+  const emptyState = document.getElementById('inbox-empty-state');
+  const ledgerGrid = document.getElementById('ledger-grid-container');
+  const extendedSection = document.querySelector('.extended-categories-section');
+  const digestSection = document.getElementById('digest-section');
+  const olderNewslettersSection = document.getElementById('older-newsletters-section');
+
+  const hasEmails = Object.keys(emailDatabase).length > 0;
+
+  if (emptyState) emptyState.classList.toggle('visible', !hasEmails);
+  if (ledgerGrid) ledgerGrid.style.display = hasEmails ? '' : 'none';
+  if (extendedSection) extendedSection.style.display = hasEmails ? '' : 'none';
+  if (digestSection) digestSection.style.display = hasEmails ? '' : 'none';
+  if (olderNewslettersSection) olderNewslettersSection.style.display = hasEmails ? '' : 'none';
+
+  // Update empty-state Connect Gmail button visibility based on login state
+  const connectBtn = document.getElementById('empty-state-btn-connect');
+  if (connectBtn) {
+    const isLoggedIn = !!sessionStorage.getItem('gmail_access_token');
+    connectBtn.style.display = isLoggedIn ? 'none' : '';
+  }
+}
+
 // Render Inbox Ledger
 function renderInbox(data) {
   emailDatabase = data;
@@ -539,6 +563,7 @@ function renderInbox(data) {
   }
 
   updateColumnCounts();
+  updateEmptyState();
 }
 
 // Render Newsletter Digest
@@ -781,6 +806,65 @@ btnSyncEmails.addEventListener('click', () => {
     });
 });
 
+// Empty State button: Sync Inbox (mirrors header sync button behaviour)
+const emptyStateBtnSync = document.getElementById('empty-state-btn-sync');
+if (emptyStateBtnSync) {
+  emptyStateBtnSync.addEventListener('click', () => {
+    const icon = emptyStateBtnSync.querySelector('i');
+
+    // Enter loading state
+    emptyStateBtnSync.disabled = true;
+    emptyStateBtnSync.style.opacity = '0.7';
+    emptyStateBtnSync.style.cursor = 'not-allowed';
+    if (icon) icon.className = 'fas fa-sync-alt fa-spin';
+    emptyStateBtnSync.childNodes[emptyStateBtnSync.childNodes.length - 1].textContent = ' Syncing logs...';
+
+    // Also mirror the header sync indicator
+    syncIcon.className = 'fas fa-sync-alt fa-spin';
+    syncTimeText.innerText = 'Syncing logs...';
+
+    fetch(`${API_BASE}/sync`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    })
+      .then(res => {
+        if (res.status === 401) { handleSessionExpired(); throw new Error('Session expired'); }
+        if (res.status === 429) { showToast('Sync rate limit reached. Please wait a moment.'); throw new Error('Rate limit'); }
+        if (!res.ok) return res.json().then(d => { throw new Error(d.message || 'Sync failed'); });
+        return res.json();
+      })
+      .then(() => {
+        syncIcon.className = 'fas fa-sync-alt';
+        syncTimeText.innerText = 'Synced just now';
+        showToast('Inbox ledger successfully updated.');
+        loadDashboardData();
+      })
+      .catch(err => {
+        console.error('Sync failed:', err);
+        syncIcon.className = 'fas fa-sync-alt';
+        syncTimeText.innerText = 'Sync failed';
+        showToast(err.message || 'Connection error. Make sure backend is running.');
+      })
+      .finally(() => {
+        // Restore button state
+        emptyStateBtnSync.disabled = false;
+        emptyStateBtnSync.style.opacity = '';
+        emptyStateBtnSync.style.cursor = '';
+        if (icon) icon.className = 'fas fa-sync-alt';
+        emptyStateBtnSync.childNodes[emptyStateBtnSync.childNodes.length - 1].textContent = ' Sync Inbox';
+      });
+  });
+}
+
+// Empty State button: Connect Gmail
+const emptyStateBtnConnect = document.getElementById('empty-state-btn-connect');
+if (emptyStateBtnConnect) {
+  emptyStateBtnConnect.addEventListener('click', () => {
+    const headerLoginBtn = document.getElementById('btn-header-login');
+    if (headerLoginBtn) headerLoginBtn.click();
+  });
+}
+
 // Live Search Filter — covers all 7 columns
 searchInput.addEventListener('input', (e) => {
   const query = e.target.value.toLowerCase().trim();
@@ -900,8 +984,8 @@ function loadDashboardData() {
       renderInbox(inboxData);
     })
     .catch(err => {
-      console.warn("Backend server not available, loading fallback mockup: ", err);
-      renderInbox(mockEmailDatabase);
+      console.warn("Backend server not available, loading empty state: ", err);
+      renderInbox({});
     });
 
   fetch(`${API_BASE}/digest`, { headers: getAuthHeaders() })
@@ -917,8 +1001,8 @@ function loadDashboardData() {
       renderDigest(digestData);
     })
     .catch(err => {
-      console.warn("Backend server not available, loading mockup digest.");
-      renderDigest(mockDigest);
+      console.warn("Backend server not available, loading empty digest: ", err);
+      renderDigest([]);
     });
 }
 
