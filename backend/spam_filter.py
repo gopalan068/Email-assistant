@@ -167,7 +167,7 @@ class SpamFilter:
             "lottery.xyz", "winbiglottery.xyz", "cheapmeds-discount.net",
             "scam-pharmacy.net", "winbig.lottery", "phishing-link.com",
             "suspicious-link-to-steal-your-identity.xyz",
-            "discover.pinterest.com",
+            "discover.pinterest.com","ideas.pinterest.com",
         ]
         if any(dom in sender_lower for dom in spam_domains):
             print(f"[Spam Heuristic] Blocked sender from blocklisted domain: {sender}")

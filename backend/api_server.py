@@ -163,8 +163,6 @@ spam_filter = SpamFilter()
 inbox_cache_path = os.path.join(backend_dir, "inbox_cache.json")
 digest_cache_path = os.path.join(backend_dir, "digest_cache.json")
 
-# Fallback Mock Data matching original mail assistant static mock
-from backend.mock_data import DEFAULT_MOCK_INBOX, DEFAULT_MOCK_DIGEST
 
 def run_mock_sync_pipeline(email):
     from backend.mock_data import RAW_MOCK_EMAILS

@@ -13,9 +13,5 @@ __pycache__/
 dist/
 dump_env_helper.py
 
-# Do not ignore preview cache files
-!backend/inbox_cache_preview_gmail_com.json
-!backend/digest_cache_preview_gmail_com.json
-
 # SpamAssassin corpus cache (auto-downloaded during retraining, not needed in repo)
 models/_sa_cache/
