@@ -420,7 +420,7 @@ body {
   font-size: 16px;
   margin-bottom: 16px;
   padding: 10px 14px;
-  background-color: rgba(47, 93, 69, 0.05);
+  background-color: rgba(47, 93, 69, 0.1);
   color: var(--color-ink);
   display: flex;
   justify-content: space-between;
