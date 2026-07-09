@@ -416,16 +416,17 @@ body {
 
 .column-header {
   font-family: 'Fraunces', serif;
-  font-weight: 500;
-  font-size: 18px;
+  font-weight: 600;
+  font-size: 16px;
   margin-bottom: 16px;
-  border-bottom: 1.5px solid var(--color-ink);
-  padding-bottom: 8px;
+  padding: 10px 14px;
+  background-color: rgba(47, 93, 69, 0.05);
   color: var(--color-ink);
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
 }
+
 
 .column-count {
   font-family: 'IBM Plex Mono', monospace;
@@ -447,13 +448,16 @@ body {
 .ledger-rows::-webkit-scrollbar {
   width: 4px;
 }
+
 .ledger-rows::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .ledger-rows::-webkit-scrollbar-thumb {
   background-color: var(--color-hairline);
   border-radius: 4px;
 }
+
 .ledger-rows::-webkit-scrollbar-thumb:hover {
   background-color: var(--color-pine);
 }
@@ -1163,7 +1167,8 @@ body {
   flex-shrink: 1;
   flex-basis: 0;
   min-width: 0;
-  position: relative; /* Set positioning context for placeholder overlay */
+  position: relative;
+  /* Set positioning context for placeholder overlay */
 }
 
 /* Default expanded state: first column (Security) is expanded when container is NOT hovered */
@@ -1212,7 +1217,8 @@ body {
   pointer-events: none;
   transition: opacity 0.3s ease, visibility 0.3s ease;
   z-index: 2;
-  background-color: var(--color-paper); /* prevent overlay bleedthrough */
+  background-color: var(--color-paper);
+  /* prevent overlay bleedthrough */
 }
 
 /* Hide placeholder when column is hovered/expanded */
@@ -1310,10 +1316,12 @@ body {
 
 /* Responsive Overrides */
 @media (max-width: 768px) {
+
   /* Sidebar Drawer styling */
   .sidebar {
     position: fixed;
-    left: -280px; /* Hide off-screen */
+    left: -280px;
+    /* Hide off-screen */
     width: 260px;
     height: 100vh;
     box-shadow: 10px 0 30px rgba(32, 38, 31, 0.1);
@@ -1323,7 +1331,8 @@ body {
   }
 
   .sidebar.open {
-    left: 0; /* Slide in */
+    left: 0;
+    /* Slide in */
     visibility: visible !important;
   }
 
@@ -1477,6 +1486,7 @@ body {
 }
 
 @media (max-width: 480px) {
+
   /* Tighten paddings and font sizes for mobile viewports */
   .main-content {
     padding: 24px 16px;
@@ -1491,10 +1501,27 @@ body {
     gap: 12px;
   }
 
-  .btn-sync {
+  .header-utilities {
     width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-sync {
+    flex: 1;
+    width: auto;
     justify-content: center;
-    padding: 8px;
+    padding: 8px 12px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .btn-connect-gmail-header {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 12px;
+    font-size: 11px;
+    white-space: nowrap;
   }
 }
 
@@ -1687,9 +1714,11 @@ body.banner-active .sidebar {
   top: 44px;
   height: calc(100vh - 44px);
 }
+
 body.banner-active .main-content {
   margin-top: 44px;
 }
+
 body.banner-active .detail-drawer {
   top: 44px;
   height: calc(100vh - 44px);
@@ -2034,5 +2063,3 @@ body.banner-active .detail-drawer {
 body.drawer-open {
   overflow: hidden !important;
 }
-
-
