@@ -12,6 +12,8 @@ __pycache__/
 .vercel/
 dist/
 dump_env_helper.py
+bundle.py
+notebooklm_codebase.txt
 
 # SpamAssassin corpus cache (auto-downloaded during retraining, not needed in repo)
 models/_sa_cache/

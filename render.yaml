@@ -6,10 +6,10 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn -b 0.0.0.0:$PORT backend.api_server:app
     envVars:
-      - key: GROQ_API_KEY
+      - key: GEMINI_API_KEY
         sync: false
-      - key: GROQ_MODEL
-        value: meta-llama/llama-4-scout-17b-16e-instruct
+      - key: GEMINI_MODEL
+        value: gemini-3.1-flash-lite
       - key: GMAIL_TOKEN_JSON
         sync: false
       - key: GMAIL_CREDENTIALS_JSON

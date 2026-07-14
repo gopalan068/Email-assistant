@@ -229,7 +229,7 @@ def extract_signals(email):
     # ── New category-specific signals ────────────────────────────────────────
     otp_kw = [
         "otp", "one-time password", "one time password", "verification code",
-        "your code", "login code", "access code", "auth code", "confirm code","code",
+        "your code", "login code", "access code", "auth code", "confirm code","code","request to log in",
     ]
     has_otp_keywords = any(has_whole_word(subject, k) or has_whole_word(body, k) for k in otp_kw)
 
@@ -394,7 +394,7 @@ def determine_ai_status_and_meta(email, reason, is_important):
         # Sign-up / registration code formats
         "sign up code", "signup code", "sign-up code",
         "is your code", "is your otp",
-        "your sign in code", "your signin code", "sign in code",
+        "your sign in code", "your signin code", "sign in code","request to log in"
     ]
     if any(has_whole_word(subject, k) or has_whole_word(body, k) for k in otp_keywords):
         return "OTP", "Inbox / OTP"
@@ -546,7 +546,7 @@ def classify_importance_batch(emails):
             "your sign in code", "your signin code", "sign in code",
             # Common suffixes: "123456 is your X code"
             "is your vercel", "is your google", "is your swiggy",
-            "is your amazon", "is your paytm", "is your flipkart",
+            "is your amazon", "is your paytm", "is your flipkart","request to log in"
         ]
         if any(pat in subject_lower for pat in otp_subject_patterns):
             email["isAiFlagged"] = True
